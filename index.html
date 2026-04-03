@@ -1,0 +1,575 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.screen{display:none;padding:.75rem}
+.screen.active{display:block}
+h2{font-size:17px;font-weight:500;color:var(--color-text-primary);margin-bottom:.75rem}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.75rem;margin-bottom:.625rem}
+.badge-a{background:#EEEDFE;color:#3C3489}.badge-b{background:#E1F5EE;color:#085041}
+.badge-c{background:#FAEEDA;color:#633806}.badge-d{background:#FCEBEB;color:#791F1F}
+.badge-s{background:#D3D1C7;color:#2C2C2A}
+.btn{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:5px 12px;font-size:13px;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans)}
+.btn:hover{background:var(--color-background-secondary)}
+.btn:active{transform:scale(.98)}
+.btn-primary{border-width:1.5px;border-color:var(--color-border-primary);font-weight:500}
+.btn-big{padding:9px 0;width:100%;font-size:14px;font-weight:500;margin-bottom:0}
+.btn-roll{background:#EEEDFE;border:1.5px solid #534AB7;color:#3C3489;padding:8px 24px;font-size:14px;font-weight:500;border-radius:var(--border-radius-md);cursor:pointer;font-family:var(--font-sans)}
+.btn-roll:hover{background:#CECBF6}
+.btn-roll:disabled{opacity:.4;cursor:not-allowed}
+.btn-stop{background:#FAEEDA;border:1.5px solid #BA7517;color:#633806;padding:8px 24px;font-size:14px;font-weight:500;border-radius:var(--border-radius-md);cursor:pointer;font-family:var(--font-sans)}
+.btn-stop:hover{background:#FAC775}
+.btn-type{width:48px;height:48px;font-size:16px;font-weight:500;border-radius:var(--border-radius-md);border:1.5px solid var(--color-border-tertiary);cursor:pointer;font-family:var(--font-sans);background:var(--color-background-secondary);color:var(--color-text-primary)}
+.btn-type:hover{border-color:var(--color-border-primary);background:var(--color-background-primary)}
+.btn-type.sel{border-color:#534AB7;background:#EEEDFE;color:#3C3489}
+.btn-type.forced{opacity:.35;cursor:not-allowed}
+.btn-type.locked{border-color:#E24B4A;background:#FCEBEB;color:#A32D2D;opacity:.5;cursor:not-allowed}
+.skill-item{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:7px 9px;margin-bottom:5px;cursor:pointer;background:var(--color-background-secondary)}
+.skill-item:hover{background:var(--color-background-primary);border-color:var(--color-border-secondary)}
+.skill-item.sel{border-color:#534AB7;background:#EEEDFE}
+.skill-item.sel-combo{border-color:#BA7517;background:#FAEEDA}
+.skill-item.sel-passive{border-color:#185FA5;background:#E6F1FB}
+.die{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:1.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:16px;font-weight:500;margin-right:5px;background:var(--color-background-primary);color:var(--color-text-primary)}
+.die.one{border-color:#1D9E75;background:#E1F5EE;color:#085041}
+.stat-bar{height:8px;border-radius:4px;background:var(--color-background-tertiary);overflow:hidden;margin-top:3px}
+.stat-fill{height:100%;border-radius:4px;transition:width .4s}
+.log-e{font-size:11px;color:var(--color-text-secondary);border-left:2px solid var(--color-border-tertiary);padding-left:6px;margin-bottom:3px;line-height:1.4}
+.log-e.w{border-color:#1D9E75;color:var(--color-text-success)}
+.log-e.l{border-color:#D85A30;color:var(--color-text-danger)}
+.log-e.p{border-color:#7F77DD;color:#534AB7}
+.log-e.combo{border-color:#BA7517;color:#633806;font-weight:500}
+.log-e.info{border-color:var(--color-border-tertiary)}
+.chip{display:inline-block;font-size:10px;padding:2px 5px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);margin:1px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.chip.match{background:#FAEEDA;border-color:#BA7517;color:#633806}
+.stag{display:inline-block;font-size:10px;padding:1px 5px;border-radius:var(--border-radius-md);margin:1px;font-weight:500}
+.stag-b{background:#EAF3DE;color:#27500A}
+.stag-d{background:#FCEBEB;color:#791F1F}
+.lbl{font-size:10px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.f1{flex:1}
+.tab-row{display:flex;gap:4px;margin-bottom:.625rem}
+.tab{flex:1;padding:5px;font-size:12px;font-weight:500;text-align:center;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-secondary);background:var(--color-background-secondary)}
+.tab.active{background:var(--color-background-primary);color:var(--color-text-primary);border-color:var(--color-border-primary)}
+.tabcontent{display:none}.tabcontent.active{display:block}
+.cnt-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:var(--border-radius-md);margin-left:4px;font-weight:500}
+.einfo-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:3px}
+.etag{font-size:11px;padding:2px 6px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
+.skill-hover-box{min-height:36px;font-size:12px;color:var(--color-text-secondary);padding:4px 0;white-space:pre-line;line-height:1.5}
+</style>
+
+<div id="s-loadout" class="screen active">
+  <h2>loadout</h2>
+  <div class="tab-row">
+    <div class="tab active" id="ltab-skills" onclick="loTab('skills')">skills</div>
+    <div class="tab" id="ltab-combos" onclick="loTab('combos')">combo <span class="cnt-badge" id="cnt-combo" style="background:#FAEEDA;color:#633806">0/5</span></div>
+    <div class="tab" id="ltab-passives" onclick="loTab('passives')">passive <span class="cnt-badge" id="cnt-passive" style="background:#E6F1FB;color:#0C447C">0/3</span></div>
+  </div>
+  <div id="lo-skills" class="tabcontent active"><div id="skill-list"></div></div>
+  <div id="lo-combos" class="tabcontent"><div id="combo-list-lo"></div></div>
+  <div id="lo-passives" class="tabcontent"><div id="passive-list-lo"></div></div>
+  <div style="text-align:right;margin-top:.5rem">
+    <button class="btn btn-primary" onclick="startGame()">เริ่มเกม →</button>
+  </div>
+</div>
+
+<div id="s-fight" class="screen">
+  <div class="row" style="margin-bottom:.5rem;align-items:flex-start;gap:8px">
+    <div class="card f1" style="margin:0">
+      <div class="row" style="justify-content:space-between"><span style="font-size:13px;font-weight:500">Player</span><span style="font-size:12px;color:var(--color-text-secondary)" id="p-hp-t">100/100</span></div>
+      <div class="stat-bar"><div class="stat-fill" id="p-hp-b" style="background:#1D9E75;width:100%"></div></div>
+      <div style="margin-top:4px;min-height:16px;font-size:10px" id="p-status"></div>
+    </div>
+    <div style="font-size:18px;padding-top:10px;color:var(--color-text-secondary)">⚔</div>
+    <div class="card f1" style="margin:0">
+      <div class="row" style="justify-content:space-between"><span style="font-size:13px;font-weight:500">Enemy</span><span style="font-size:12px;color:var(--color-text-secondary)" id="e-hp-t">80/80</span></div>
+      <div class="stat-bar"><div class="stat-fill" id="e-hp-b" style="background:#D85A30;width:100%"></div></div>
+      <div style="margin-top:4px;min-height:16px;font-size:10px" id="e-status"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:.5rem">
+    <div class="lbl">enemy loadout</div>
+    <div style="margin-bottom:4px"><span style="font-size:11px;font-weight:500;color:var(--color-text-secondary)">skills:</span> <span id="e-skills-info" style="font-size:11px;color:var(--color-text-secondary)"></span></div>
+    <div style="margin-bottom:4px"><span style="font-size:11px;font-weight:500;color:var(--color-text-secondary)">passive:</span> <span id="e-passive-info" style="font-size:11px;color:var(--color-text-secondary)"></span></div>
+    <div><span style="font-size:11px;font-weight:500;color:var(--color-text-secondary)">combos:</span> <span id="e-combo-info" style="font-size:11px;color:var(--color-text-secondary)"></span></div>
+  </div>
+
+  <div id="phase-roll" class="card">
+    <div class="lbl">phase 1 — โยนเต๋า</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">ของคุณ</div>
+        <div id="p-dice" style="min-height:38px"></div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:3px">รวม: <b id="p-sum">0</b> | โยน: <b id="p-cnt">0</b>x | speed: <b id="p-spd">0</b></div>
+      </div>
+      <div style="width:1px;background:var(--color-border-tertiary)"></div>
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">ศัตรู (เห็นหลัง หยุด)</div>
+        <div id="e-dice" style="min-height:38px;color:var(--color-text-tertiary);font-size:12px;display:flex;align-items:center">—</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:3px">รวม: <b id="e-sum">—</b> | speed: <b id="e-spd">—</b></div>
+      </div>
+    </div>
+    <div class="row" style="justify-content:center;gap:10px">
+      <button class="btn-roll" id="btn-roll" onclick="doRoll()">+ โยน</button>
+      <button class="btn-stop" onclick="stopRoll()">หยุด →</button>
+    </div>
+    <div id="roll-hint" style="font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:5px"></div>
+  </div>
+
+  <div id="phase-skill" class="card" style="display:none">
+    <div class="lbl">phase 2 — เลือก skill type <span style="font-weight:400;color:var(--color-text-tertiary)">(hover เพื่อดูรายละเอียด)</span></div>
+    <div class="row" id="type-btns" style="margin-bottom:6px;justify-content:center;gap:6px"></div>
+    <div class="skill-hover-box" id="skill-hover-info">เลือก type ที่ต้องการใช้</div>
+    <button class="btn btn-big btn-primary" style="margin-top:6px" onclick="doClash()">clash!</button>
+  </div>
+
+  <div class="card">
+    <div class="lbl">chain <span id="chain-disp"></span></div>
+    <div id="combo-prog" style="font-size:10px;color:var(--color-text-secondary);margin-top:2px"></div>
+  </div>
+
+  <div class="card">
+    <div class="lbl">battle log</div>
+    <div id="blog" style="max-height:130px;overflow-y:auto"></div>
+  </div>
+</div>
+
+<div id="s-end" class="screen" style="text-align:center;padding:2rem 1rem">
+  <div style="font-size:32px;margin-bottom:.5rem" id="end-icon"></div>
+  <h2 id="end-title" style="text-align:center;margin-bottom:.25rem"></h2>
+  <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem" id="end-sub"></p>
+  <button class="btn btn-primary" onclick="resetAll()">เล่นใหม่</button>
+</div>
+
+<script>
+const SD={
+  a1:{id:'a1',name:'slash',type:'A',desc:'onWin: dmg=ผลรวมเต๋า, debuff ศัตรูห้ามใช้ B รอบหน้า\nonParry: dmg 1 ใส่ศัตรู\nonLose: ไม่มี'},
+  a2:{id:'a2',name:'quick slash',type:'A',desc:'onWin: dmg=ผลรวมเต๋า+2\nonParry: dmg 2\nonLose: ไม่มี'},
+  a3:{id:'a3',name:'one cut',type:'A',desc:'onWin: dmg=จำนวนหน้า[1]×10 (ถ้าไม่มีหน้า 1 = dmg 1)\nonParry: dmg 1 ใส่ทั้งตัวเองและศัตรู\nonLose: dmg 1 ใส่ตัวเอง'},
+  b1:{id:'b1',name:'dash',type:'B',desc:'onWin: dmg=ผลรวมเต๋า, debuff ศัตรูห้ามใช้ C รอบหน้า\nonParry: dmg 1\nonLose: ไม่มี'},
+  c1:{id:'c1',name:'block',type:'C',desc:'onWin: heal self=จำนวนครั้งโยน×2\nonParry: dmg 1\nonLose: ไม่มี'},
+  c2:{id:'c2',name:'submission',type:'C',desc:'onWin: dmg=ผลรวมเต๋าของศัตรู\nonParry: ไม่มี\nonLose: ไม่มี'},
+  d1:{id:'d1',name:'heal',type:'D',desc:'onWin: heal self=ผลรวมเต๋า\nonParry: ไม่มี\nonLose: buff forceW รอบหน้า (clash ออก W แน่นอน)'},
+  s1:{id:'s1',name:'nothing',type:'S',desc:'ไม่มีผล (บังคับใช้เมื่อผลรวมเต๋า>11)'},
+};
+
+const CD=[
+  {id:'co1',name:'double strike',pattern:['AW','AW'],effect:'deal 8 dmg'},
+  {id:'co2',name:'riposte',pattern:['CW','AW'],effect:'deal 6 dmg + heal 3'},
+  {id:'co3',name:'full counter',pattern:['CW','CW','CW'],effect:'heal 12'},
+  {id:'co4',name:'lucky strike',pattern:['DW','AW'],effect:'deal 10 dmg'},
+  {id:'co5',name:'rally',pattern:['DL','DW'],effect:'heal 8 + ลบ debuff'},
+  {id:'co6',name:'blade rush',pattern:['AW','AW','AW'],effect:'deal 15 dmg'},
+  {id:'co7',name:'iron wall',pattern:['CW','CW'],effect:'heal 6'},
+  {id:'co8',name:'desperation',pattern:['DL','DL','AW'],effect:'deal 12 dmg'},
+];
+
+const PD=[
+  {id:'pa1',name:'battle rage',desc:'ชนะ clash สะสม rage +1 ครบ 3 → dmg 5 ทันที'},
+  {id:'pa2',name:'iron skin',desc:'hp<50% ทุกครั้งโดน dmg ลด 1'},
+  {id:'pa3',name:'lucky dice',desc:'โยนครั้งแรกออก 6 → ได้ free roll 1 ครั้ง'},
+  {id:'pa4',name:'comeback',desc:'แพ้ 2 รอบติด → speed +3 รอบถัดไป'},
+  {id:'pa5',name:'momentum',desc:'ชนะรอบก่อน → dmg รอบนี้ +2'},
+];
+
+const ESP=[
+  {id:'ea',name:'claw',type:'A',desc:'onWin: dmg สุ่ม 3-7'},
+  {id:'eb',name:'smash',type:'B',desc:'onWin: dmg สุ่ม 4-8'},
+  {id:'ec',name:'guard',type:'C',desc:'onWin: heal 4'},
+  {id:'ed',name:'regen',type:'D',desc:'onWin: heal 5'},
+  {id:'es',name:'idle',type:'S',desc:'ไม่มีผล'},
+];
+
+const ENEMY_LOADOUT={
+  skills:{A:'ea',B:'eb',C:'ec',D:'ed',S:'es'},
+  passives:['pa2'],
+  combos:['co1','co3'],
+};
+
+const CLASH_T={
+  'A-A':'PP','A-B':'WL','A-C':'LW','A-D':'WL','A-S':'WW',
+  'B-B':'PP','B-C':'WL','B-D':'WL','B-S':'WW',
+  'C-C':'LL','C-D':'LW','C-S':'WW',
+  'D-D':'WW','D-S':'WW','S-S':'WW'
+};
+
+function getClash(t1,t2){
+  let k=t1+'-'+t2;if(CLASH_T[k])return CLASH_T[k];
+  k=t2+'-'+t1;if(CLASH_T[k]){let r=CLASH_T[k];return r[1]+r[0];}
+  return 'PP';
+}
+
+let G={};
+
+function initG(){
+  G={
+    p:{hp:100,maxHp:100,buffs:{},statuses:[]},
+    e:{hp:80,maxHp:80,buffs:{},statuses:[]},
+    pDice:[],pRolls:0,eDice:[],eRolls:0,
+    selectedType:null,phase:'roll',
+    chain:[],turn:0,
+    selectedSkills:{A:'a1',B:'b1',C:'c1',D:'d1',S:'s1'},
+    selectedCombos:['co1','co2','co4'],
+    selectedPassives:['pa1'],
+    ps:{rage:0,lastResult:null,loseStreak:0},
+    eRolled:false,currentEType:null,
+  };
+}
+
+function loTab(t){
+  ['skills','combos','passives'].forEach(x=>{
+    document.getElementById('ltab-'+x).classList.toggle('active',x===t);
+    document.getElementById('lo-'+x).classList.toggle('active',x===t);
+  });
+}
+
+function renderLoadout(){
+  const types=['A','B','C','D','S'];
+  const tnames={A:'aggressive',B:'burst',C:'counter',D:'defensive',S:'special'};
+  document.getElementById('skill-list').innerHTML=types.map(t=>{
+    const skills=Object.values(SD).filter(s=>s.type===t);
+    return`<div style="margin-bottom:10px">
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+        <span style="font-size:11px;font-weight:500;padding:2px 8px;border-radius:6px;" class="badge-${t.toLowerCase()}">${t}</span>
+        <span style="font-size:12px;color:var(--color-text-secondary)">${tnames[t]}</span>
+      </div>
+      ${skills.map(s=>`<div class="skill-item${G.selectedSkills[t]===s.id?' sel':''}" onclick="pickSkill('${t}','${s.id}')">
+        <div style="font-size:13px;font-weight:500">${s.name}</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px;white-space:pre-line">${s.desc}</div>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+
+  document.getElementById('combo-list-lo').innerHTML=CD.map(c=>{
+    const sel=G.selectedCombos.includes(c.id);
+    return`<div class="skill-item${sel?' sel-combo':''}" onclick="toggleCombo('${c.id}')">
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:13px;font-weight:500">${c.name}</span>
+        <span style="font-size:11px;color:var(--color-text-secondary)">${c.pattern.join(' → ')}</span>
+      </div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">${c.effect}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('passive-list-lo').innerHTML=PD.map(p=>{
+    const sel=G.selectedPassives.includes(p.id);
+    return`<div class="skill-item${sel?' sel-passive':''}" onclick="togglePassive('${p.id}')">
+      <div style="font-size:13px;font-weight:500">${p.name}</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">${p.desc}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('cnt-combo').textContent=G.selectedCombos.length+'/5';
+  document.getElementById('cnt-passive').textContent=G.selectedPassives.length+'/3';
+}
+
+function pickSkill(type,id){G.selectedSkills[type]=id;renderLoadout();}
+function toggleCombo(id){
+  const i=G.selectedCombos.indexOf(id);
+  if(i>-1)G.selectedCombos.splice(i,1);
+  else if(G.selectedCombos.length<5)G.selectedCombos.push(id);
+  renderLoadout();
+}
+function togglePassive(id){
+  const i=G.selectedPassives.indexOf(id);
+  if(i>-1)G.selectedPassives.splice(i,1);
+  else if(G.selectedPassives.length<3)G.selectedPassives.push(id);
+  renderLoadout();
+}
+
+function renderEnemyLoadout(){
+  const skillStrs=Object.entries(ENEMY_LOADOUT.skills).map(([t,id])=>{
+    const sk=ESP.find(s=>s.id===id);
+    return sk?`${t}:${sk.name}`:'';
+  }).filter(Boolean).join(', ');
+  document.getElementById('e-skills-info').textContent=skillStrs;
+  document.getElementById('e-passive-info').textContent=
+    ENEMY_LOADOUT.passives.map(pid=>{const p=PD.find(x=>x.id===pid);return p?p.name+' ('+p.desc+')':''}).join(', ')||'ไม่มี';
+  document.getElementById('e-combo-info').textContent=
+    ENEMY_LOADOUT.combos.map(cid=>{const c=CD.find(x=>x.id===cid);return c?c.name+' ['+c.pattern.join('→')+']':''}).join(', ')||'ไม่มี';
+}
+
+function startGame(){
+  document.getElementById('s-loadout').style.display='none';
+  document.getElementById('s-fight').style.display='block';
+  renderEnemyLoadout();
+  beginTurn();
+}
+
+function beginTurn(){
+  G.turn++;G.pDice=[];G.pRolls=0;G.eDice=[];G.eRolls=0;
+  G.selectedType=null;G.phase='roll';G.eRolled=false;G.currentEType=null;
+  document.getElementById('phase-roll').style.display='block';
+  document.getElementById('phase-skill').style.display='none';
+  document.getElementById('p-dice').innerHTML='';
+  document.getElementById('p-sum').textContent='0';
+  document.getElementById('p-cnt').textContent='0';
+  document.getElementById('p-spd').textContent='0';
+  document.getElementById('e-dice').innerHTML='<span style="color:var(--color-text-tertiary);font-size:12px">—</span>';
+  document.getElementById('e-sum').textContent='—';
+  document.getElementById('e-spd').textContent='—';
+  document.getElementById('btn-roll').disabled=false;
+  document.getElementById('roll-hint').textContent='รอบ '+G.turn+' — โยนเต๋าได้เลย กด หยุด เมื่อพอแล้ว';
+  updateFightUI();
+  addLog('— รอบ '+G.turn+' —','info');
+}
+
+function doRoll(){
+  if(G.phase!=='roll')return;
+  const sum=G.pDice.reduce((a,b)=>a+b,0);
+  if(sum>11){stopRoll();return;}
+  const v=Math.floor(Math.random()*6)+1;
+  G.pDice.push(v);G.pRolls++;
+  renderPDice();
+  if(G.selectedPassives.includes('pa3')&&G.pRolls===1&&v===6){
+    addLog('passive lucky dice: ได้ free roll!','w');
+    setTimeout(()=>{const v2=Math.floor(Math.random()*6)+1;G.pDice.push(v2);G.pRolls++;renderPDice();},400);
+  }
+  const newSum=G.pDice.reduce((a,b)=>a+b,0);
+  if(newSum>11){
+    document.getElementById('roll-hint').textContent='ผลรวมเกิน 11 — บังคับใช้ type S!';
+    document.getElementById('btn-roll').disabled=true;
+    stopRoll();
+  }
+}
+
+function renderPDice(){
+  const sum=G.pDice.reduce((a,b)=>a+b,0);
+  document.getElementById('p-dice').innerHTML=G.pDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('');
+  document.getElementById('p-sum').textContent=sum;
+  document.getElementById('p-cnt').textContent=G.pRolls;
+  document.getElementById('p-spd').textContent=sum+G.pRolls;
+}
+
+function enemyRoll(){
+  const cnt=Math.floor(Math.random()*3)+1;
+  for(let i=0;i<cnt;i++){
+    const v=Math.floor(Math.random()*6)+1;
+    G.eDice.push(v);G.eRolls++;
+    if(G.eDice.reduce((a,b)=>a+b,0)>=10)break;
+  }
+  const eSum=G.eDice.reduce((a,b)=>a+b,0);
+  document.getElementById('e-dice').innerHTML=G.eDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('');
+  document.getElementById('e-sum').textContent=eSum;
+  document.getElementById('e-spd').textContent=eSum+G.eRolls;
+}
+
+function stopRoll(){
+  if(G.pDice.length===0){document.getElementById('roll-hint').textContent='โยนเต๋าอย่างน้อย 1 ครั้งก่อนนะ!';return;}
+  G.phase='skill';
+  if(!G.eRolled){enemyRoll();G.eRolled=true;}
+  const locked=G.e.buffs.lockedType||null;
+  const avail=['A','B','C','D'].filter(t=>t!==locked);
+  G.currentEType=avail[Math.floor(Math.random()*avail.length)]||'S';
+  document.getElementById('phase-roll').style.display='none';
+  document.getElementById('phase-skill').style.display='block';
+  renderTypeButtons();
+}
+
+function renderTypeButtons(){
+  const pSum=G.pDice.reduce((a,b)=>a+b,0);
+  const forced=pSum>11;
+  const locked=G.p.buffs.lockedType||null;
+  document.getElementById('type-btns').innerHTML=['A','B','C','D','S'].map(t=>{
+    let cls='btn-type';
+    if(forced&&t!=='S')cls+=' forced';
+    else if(locked===t)cls+=' locked';
+    else if(G.selectedType===t)cls+=' sel';
+    return`<button class="${cls}" onmouseenter="showHint('${t}')" onmouseleave="clearHint()" onclick="pickType('${t}')">${t}</button>`;
+  }).join('');
+}
+
+function showHint(t){
+  const sk=SD[G.selectedSkills[t]];
+  document.getElementById('skill-hover-info').innerHTML=sk?`<b>${sk.name}</b> (type ${t})\n${sk.desc}`:'';
+}
+function clearHint(){
+  document.getElementById('skill-hover-info').textContent=G.selectedType
+    ?'เลือกแล้ว: '+G.selectedType+' — '+(SD[G.selectedSkills[G.selectedType]]?.name||'')
+    :'เลือก type ที่ต้องการใช้';
+}
+
+function pickType(t){
+  const pSum=G.pDice.reduce((a,b)=>a+b,0);
+  if(pSum>11)return;
+  if(G.p.buffs.lockedType===t){addLog('type '+t+' ถูก debuff ใช้ไม่ได้!','l');return;}
+  G.selectedType=t;
+  renderTypeButtons();
+  clearHint();
+}
+
+function doClash(){
+  if(!G.selectedType){addLog('เลือก type ก่อนนะ!','info');return;}
+  const pType=G.selectedType;
+  const eType=G.currentEType;
+  const pSkill=SD[G.selectedSkills[pType]];
+  const eSkillId=ENEMY_LOADOUT.skills[eType];
+  const eSkill=ESP.find(s=>s.id===eSkillId)||ESP[4];
+  const pSum=G.pDice.reduce((a,b)=>a+b,0);
+  const eSum=G.eDice.reduce((a,b)=>a+b,0);
+  const pSpd=pSum+G.pRolls+(G.selectedPassives.includes('pa4')&&G.ps.loseStreak>=2?3:0);
+  const eSpd=eSum+G.eRolls;
+
+  let raw=getClash(pType,eType);
+  let pR=raw[0],eR=raw[1];
+
+  if(G.p.buffs.forceW){pR='W';eR='L';delete G.p.buffs.forceW;addLog('buff forceW: player ชนะ clash!','w');}
+
+  addLog(`${pSkill.name}(${pType}) vs ${eSkill.name}(${eType}) → P:${pR} E:${eR}`,'info');
+
+  let pFirst=pSpd>=eSpd;
+  if(pSpd===eSpd){pFirst=G.p.hp>=G.e.hp;if(G.p.hp===G.e.hp)pFirst=Math.random()>.5;}
+
+  if(pFirst){
+    trigP(pSkill,pR,eSum,pSum);
+    if(!isDead())trigE(eSkill,eR);
+  }else{
+    trigE(eSkill,eR);
+    if(!isDead())trigP(pSkill,pR,eSum,pSum);
+  }
+
+  const ck=pType+(pR==='W'?'W':pR==='L'?'L':'P');
+  G.chain.push(ck);if(G.chain.length>8)G.chain.shift();
+
+  trigPassives(pR);
+  checkCombos();
+  G.ps.lastResult=pR;
+  if(pR==='L')G.ps.loseStreak++;else G.ps.loseStreak=0;
+
+  delete G.p.buffs.lockedType;
+  delete G.e.buffs.lockedType;
+
+  updateFightUI();
+  if(!checkDeath())setTimeout(beginTurn,300);
+}
+
+function trigP(skill,res,eSum,pSum){
+  const ones=G.pDice.filter(d=>d===1).length;
+  const momBonus=(G.selectedPassives.includes('pa5')&&G.ps.lastResult==='W')?2:0;
+  if(res==='W'){
+    if(skill.type==='A'){
+      let dmg=(skill.id==='a3')?(ones>0?ones*10:1):(skill.id==='a2'?pSum+2:pSum)+momBonus;
+      if(skill.id!=='a3')dmg=dmg;
+      G.e.hp=Math.max(0,G.e.hp-dmg);
+      addLog(`${skill.name} onWin: dmg ${dmg}`,'w');
+      if(skill.id!=='a3'){G.e.buffs.lockedType='B';addLog('debuff ศัตรู: ห้ามใช้ B รอบหน้า','w');}
+    }else if(skill.type==='B'){
+      const dmg=pSum+momBonus;G.e.hp=Math.max(0,G.e.hp-dmg);
+      addLog(`${skill.name} onWin: dmg ${dmg}`,'w');
+      G.e.buffs.lockedType='C';addLog('debuff ศัตรู: ห้ามใช้ C รอบหน้า','w');
+    }else if(skill.type==='C'){
+      if(skill.id==='c1'){const h=G.pRolls*2;G.p.hp=Math.min(G.p.maxHp,G.p.hp+h);addLog(`${skill.name} onWin: heal ${h}`,'w');}
+      if(skill.id==='c2'){const dmg=eSum;G.e.hp=Math.max(0,G.e.hp-dmg);addLog(`${skill.name} onWin: dmg=เต๋าศัตรู ${dmg}`,'w');}
+    }else if(skill.type==='D'){
+      const h=pSum;G.p.hp=Math.min(G.p.maxHp,G.p.hp+h);addLog(`${skill.name} onWin: heal ${h}`,'w');
+    }
+    if(G.selectedPassives.includes('pa1')){
+      G.ps.rage++;
+      if(G.ps.rage>=3){G.e.hp=Math.max(0,G.e.hp-5);G.ps.rage=0;addLog('passive battle rage: trigger! dmg 5','w');}
+      else addLog(`passive battle rage: rage ${G.ps.rage}/3`,'info');
+    }
+  }else if(res==='P'){
+    if(skill.id==='a3'){G.e.hp=Math.max(0,G.e.hp-1);G.p.hp=Math.max(0,G.p.hp-1);addLog(`${skill.name} onParry: dmg 1 ทั้งคู่`,'p');}
+    else if(skill.type==='A'||skill.type==='B'||(skill.type==='C'&&skill.id==='c1')){G.e.hp=Math.max(0,G.e.hp-1);addLog(`${skill.name} onParry: dmg 1`,'p');}
+  }else if(res==='L'){
+    if(skill.id==='a3'){let d=1;if(G.selectedPassives.includes('pa2')&&G.p.hp<G.p.maxHp/2)d=0;G.p.hp=Math.max(0,G.p.hp-d);addLog(`${skill.name} onLose: dmg ${d} ใส่ตัวเอง`,'l');}
+    else if(skill.type==='D'){G.p.buffs.forceW=true;addLog(`${skill.name} onLose: buff forceW รอบหน้า`,'w');}
+  }
+}
+
+function trigE(eSkill,eRes){
+  if(eRes==='W'){
+    if(eSkill.type==='A'||eSkill.type==='B'){
+      let d=eSkill.type==='A'?Math.floor(Math.random()*5)+3:Math.floor(Math.random()*5)+4;
+      if(G.selectedPassives.includes('pa2')&&G.p.hp<G.p.maxHp/2)d=Math.max(0,d-1);
+      G.p.hp=Math.max(0,G.p.hp-d);addLog(`enemy ${eSkill.name}: dmg ${d}`,'l');
+    }else if(eSkill.type==='C'||eSkill.type==='D'){
+      const h=eSkill.type==='C'?4:5;G.e.hp=Math.min(G.e.maxHp,G.e.hp+h);addLog(`enemy ${eSkill.name}: heal ${h}`,'l');
+    }
+    if(ENEMY_LOADOUT.passives.includes('pa2')&&G.e.hp<G.e.maxHp/2){addLog('enemy passive iron skin active','info');}
+  }
+}
+
+function trigPassives(pR){
+  if(G.selectedPassives.includes('pa4')&&G.ps.loseStreak>=2)addLog('passive comeback: speed+3 ใช้แล้วรอบนี้','info');
+}
+
+function checkCombos(){
+  for(const cid of G.selectedCombos){
+    const c=CD.find(x=>x.id===cid);if(!c)continue;
+    if(G.chain.length<c.pattern.length)continue;
+    const tail=G.chain.slice(-c.pattern.length);
+    if(tail.join(',')===c.pattern.join(',')){
+      addLog('COMBO: '+c.name+' — '+c.effect,'combo');
+      applyCombo(c);
+    }
+  }
+  renderChain();
+  checkEnemyCombos();
+}
+
+function checkEnemyCombos(){}
+
+function applyCombo(c){
+  if(c.id==='co1')G.e.hp=Math.max(0,G.e.hp-8);
+  else if(c.id==='co2'){G.e.hp=Math.max(0,G.e.hp-6);G.p.hp=Math.min(G.p.maxHp,G.p.hp+3);}
+  else if(c.id==='co3')G.p.hp=Math.min(G.p.maxHp,G.p.hp+12);
+  else if(c.id==='co4')G.e.hp=Math.max(0,G.e.hp-10);
+  else if(c.id==='co5'){G.p.hp=Math.min(G.p.maxHp,G.p.hp+8);G.p.buffs={};}
+  else if(c.id==='co6')G.e.hp=Math.max(0,G.e.hp-15);
+  else if(c.id==='co7')G.p.hp=Math.min(G.p.maxHp,G.p.hp+6);
+  else if(c.id==='co8')G.e.hp=Math.max(0,G.e.hp-12);
+}
+
+function renderChain(){
+  document.getElementById('chain-disp').innerHTML=G.chain.slice(-8).map(c=>`<span class="chip">${c}</span>`).join('');
+  document.getElementById('combo-prog').innerHTML=G.selectedCombos.map(cid=>{
+    const c=CD.find(x=>x.id===cid);if(!c)return'';
+    const tail=G.chain.slice(-c.pattern.length);
+    const matched=tail.join(',')===c.pattern.join(',');
+    return`<span style="margin-right:8px">${c.name}: ${c.pattern.map(p=>`<span class="chip${matched?' match':''}">${p}</span>`).join('')}</span>`;
+  }).join('');
+}
+
+function isDead(){return G.p.hp<=0||G.e.hp<=0;}
+
+function updateFightUI(){
+  const p=G.p,e=G.e;
+  document.getElementById('p-hp-t').textContent=Math.max(0,Math.round(p.hp))+'/'+p.maxHp;
+  document.getElementById('e-hp-t').textContent=Math.max(0,Math.round(e.hp))+'/'+e.maxHp;
+  document.getElementById('p-hp-b').style.width=Math.max(0,p.hp/p.maxHp*100)+'%';
+  document.getElementById('e-hp-b').style.width=Math.max(0,e.hp/e.maxHp*100)+'%';
+  document.getElementById('p-status').innerHTML=Object.entries(p.buffs).map(([k])=>`<span class="stag stag-b">${k}</span>`).join('');
+  document.getElementById('e-status').innerHTML=Object.entries(e.buffs).map(([k,v])=>`<span class="stag ${k==='lockedType'?'stag-d':'stag-b'}">${k==='lockedType'?'no '+v:k}</span>`).join('');
+}
+
+function addLog(msg,type){
+  const el=document.getElementById('blog');if(!el)return;
+  const d=document.createElement('div');
+  d.className='log-e '+(type||'info');
+  d.textContent=msg;el.prepend(d);
+  while(el.children.length>50)el.removeChild(el.lastChild);
+}
+
+function checkDeath(){
+  if(G.e.hp<=0){showEnd(true);return true;}
+  if(G.p.hp<=0){showEnd(false);return true;}
+  return false;
+}
+
+function showEnd(win){
+  document.getElementById('s-fight').style.display='none';
+  document.getElementById('s-end').style.display='block';
+  document.getElementById('end-icon').textContent=win?'★':'✕';
+  document.getElementById('end-title').textContent=win?'ชนะ!':'แพ้...';
+  document.getElementById('end-sub').textContent=win?`เอาชนะ enemy ใน ${G.turn} รอบ`:'ลองใหม่อีกครั้ง';
+}
+
+function resetAll(){
+  document.getElementById('s-end').style.display='none';
+  document.getElementById('blog').innerHTML='';
+  initG();renderLoadout();
+  document.getElementById('s-loadout').style.display='block';
+}
+
+initG();renderLoadout();
+</script>
