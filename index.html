@@ -355,6 +355,7 @@ body {
   <!-- Phase Skill -->
   <div id="phase-skill" class="card" style="display:none">
     <div class="lbl">phase 2: เลือก skill type</div>
+    <div id="dice-summary" style="margin-bottom:12px;padding-bottom:10px;border-bottom:0.5px solid var(--border)"></div>
     <div class="type-grid" id="type-btns"></div>
     <div class="hover-box" id="skill-hover">hover เพื่อดูรายละเอียด skill</div>
     <button class="btn-clash" onclick="doClash()">— CLASH —</button>
@@ -851,6 +852,35 @@ function doRoll() {
   }
 }
 
+function renderDiceSummary(){
+  const pSum=G.pDice.reduce((a,b)=>a+b,0);
+  const eSum=G.eDice.reduce((a,b)=>a+b,0);
+  const pSpd=pSum+G.pRolls+(hasPa('pa4')&&G.ps.loseStreak>=2?3:0);
+  const eSpd=eSum+G.eRolls;
+  const pOnes=G.pDice.filter(d=>d===1).length;
+  const eOnes=G.eDice.filter(d=>d===1).length;
+  document.getElementById('dice-summary').innerHTML=`
+    <div style="display:flex;gap:10px">
+      <div style="flex:1">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace">YOUR DICE</div>
+        <div style="margin-bottom:4px">${G.pDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('')}</div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">
+          รวม <span style="color:var(--text)">${pSum}</span> · โยน <span style="color:var(--text)">${G.pRolls}</span>x · spd <span style="color:var(--d)">${pSpd}</span>
+          ${pOnes>0?`· <span style="color:var(--win)">[1]×${pOnes}</span>`:''}
+        </div>
+      </div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div style="flex:1">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace">ENEMY DICE</div>
+        <div style="margin-bottom:4px">${G.eDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('')}</div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">
+          รวม <span style="color:var(--text)">${eSum}</span> · โยน <span style="color:var(--text)">${G.eRolls}</span>x · spd <span style="color:var(--a)">${eSpd}</span>
+          ${eOnes>0?`· <span style="color:var(--win)">[1]×${eOnes}</span>`:''}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderPDice(){
   const sum=G.pDice.reduce((a,b)=>a+b,0);
   document.getElementById('p-dice').innerHTML=G.pDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('');
@@ -882,8 +912,16 @@ function stopRoll(){
   const en=ENEMIES[G.currentEnemy];
   const locked=G.e.buffs.lockedType||null;
   G.currentEType=en.aiPick(locked);
+
+  // auto-select S if forced
+  const pSum=G.pDice.reduce((a,b)=>a+b,0);
+  if(pSum>11){ G.selectedType='S'; }
+
   document.getElementById('phase-roll').style.display='none';
   document.getElementById('phase-skill').style.display='block';
+
+  // show dice summary in phase-skill
+  renderDiceSummary();
   renderTypeButtons();
 }
 
@@ -919,7 +957,8 @@ function clearHint(){
 
 function pickType(t){
   const sum=G.pDice.reduce((a,b)=>a+b,0);
-  if(sum>11) return;
+  const forced=sum>11;
+  if(forced && t!=='S') return;  // only S allowed when forced
   if(G.p.buffs.lockedType===t){ addLog(`type ${t} ถูก debuff ใช้ไม่ได้!`,'l'); return; }
   G.selectedType=t; renderTypeButtons();
   const sk=SKILLS[G.selectedSkills[t]];
@@ -1124,15 +1163,22 @@ function updateFightUI(){
   document.getElementById('p-hp-b').style.width=Math.max(0,p.hp/p.maxHp*100)+'%';
   document.getElementById('e-hp-b').style.width=Math.max(0,e.hp/e.maxHp*100)+'%';
 
-  const renderStatuses=(entity)=>[
-    ...Object.entries(entity.buffs).map(([k,v])=>{
-      if(k==='lockedType') return `<span class="stag stag-debuff">no ${v}</span>`;
-      return `<span class="stag stag-buff">${k}</span>`;
-    }),
-    ...entity.statuses.map(s=>`<span class="stag stag-buff">${s.id} ${s.potency}×${s.count}</span>`)
-  ].join('');
-  document.getElementById('p-status').innerHTML=renderStatuses(p);
-  document.getElementById('e-status').innerHTML=renderStatuses(e);
+  function renderEntityStatus(entity){
+    const tags=[];
+    Object.entries(entity.buffs).forEach(([k,v])=>{
+      if(k==='lockedType') tags.push(`<span class="stag stag-debuff">no ${v}</span>`);
+      else if(k==='forceW') tags.push(`<span class="stag stag-buff">mustwin</span>`);
+      else tags.push(`<span class="stag stag-buff">${k}</span>`);
+    });
+    entity.statuses.forEach(s=>{
+      const def=STATUS_EFFECTS[s.id];
+      const isHeal=['regen','mustwin'].includes(s.id);
+      tags.push(`<span class="stag ${isHeal?'stag-buff':'stag-debuff'}">${def?def.name:s.id} ${s.potency}p ${s.count}c</span>`);
+    });
+    return tags.join('');
+  }
+  document.getElementById('p-status').innerHTML=renderEntityStatus(p);
+  document.getElementById('e-status').innerHTML=renderEntityStatus(e);
 }
 
 function addLog(msg, type){
