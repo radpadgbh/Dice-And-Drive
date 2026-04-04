@@ -6,292 +6,134 @@
 <title>Dice & Drive</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-
 :root {
-  --bg: #0f0f13;
-  --bg2: #17171e;
-  --bg3: #1e1e28;
-  --border: rgba(255,255,255,0.08);
-  --border2: rgba(255,255,255,0.15);
-  --text: #e8e8f0;
-  --muted: rgba(232,232,240,0.45);
-  --faint: rgba(232,232,240,0.2);
-
-  --a: #ff6b6b; --a-pale: rgba(255,107,107,0.12); --a-mid: rgba(255,107,107,0.35);
-  --b: #6b9fff; --b-pale: rgba(107,159,255,0.12); --b-mid: rgba(107,159,255,0.35);
-  --c: #6bffaa; --c-pale: rgba(107,255,170,0.12); --c-mid: rgba(107,255,170,0.35);
-  --d: #c56bff; --d-pale: rgba(197,107,255,0.12); --d-mid: rgba(197,107,255,0.35);
-  --s: #ffe06b; --s-pale: rgba(255,224,107,0.12); --s-mid: rgba(255,224,107,0.35);
-
-  --win: #6bffaa; --win-bg: rgba(107,255,170,0.1);
-  --lose: #ff6b6b; --lose-bg: rgba(255,107,107,0.1);
-  --parry: #c56bff; --parry-bg: rgba(197,107,255,0.1);
-  --combo: #ffe06b; --combo-bg: rgba(255,224,107,0.1);
+  --bg:#0f0f13;--bg2:#17171e;--bg3:#1e1e28;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#e8e8f0;--muted:rgba(232,232,240,0.45);--faint:rgba(232,232,240,0.2);
+  --a:#ff6b6b;--a-pale:rgba(255,107,107,0.12);--a-mid:rgba(255,107,107,0.35);
+  --b:#6b9fff;--b-pale:rgba(107,159,255,0.12);--b-mid:rgba(107,159,255,0.35);
+  --c:#6bffaa;--c-pale:rgba(107,255,170,0.12);--c-mid:rgba(107,255,170,0.35);
+  --d:#c56bff;--d-pale:rgba(197,107,255,0.12);--d-mid:rgba(197,107,255,0.35);
+  --s:#ffe06b;--s-pale:rgba(255,224,107,0.12);--s-mid:rgba(255,224,107,0.35);
+  --win:#6bffaa;--win-bg:rgba(107,255,170,0.1);
+  --lose:#ff6b6b;--lose-bg:rgba(255,107,107,0.1);
+  --parry:#c56bff;--parry-bg:rgba(197,107,255,0.1);
+  --combo:#ffe06b;--combo-bg:rgba(255,224,107,0.1);
 }
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Outfit', sans-serif;
-  font-size: 14px;
-  min-height: 100vh;
-  padding: 12px;
-}
-
-.mono { font-family: 'Space Mono', monospace; }
-
-/* ── screens ── */
-.screen { display: none; }
-.screen.active { display: block; }
-
-/* ── cards ── */
-.card {
-  background: var(--bg2);
-  border: 0.5px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 10px;
-}
-.card-inner {
-  background: var(--bg3);
-  border: 0.5px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin-bottom: 6px;
-}
-
-/* ── labels ── */
-.lbl {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
-/* ── tabs ── */
-.tabs { display: flex; gap: 4px; margin-bottom: 10px; }
-.tab {
-  flex: 1; padding: 7px 4px; font-size: 12px; font-weight: 600;
-  text-align: center; border: 0.5px solid var(--border);
-  border-radius: 8px; cursor: pointer; color: var(--muted);
-  background: var(--bg3); font-family: 'Outfit', sans-serif;
-  transition: all .15s;
-}
-.tab:hover { color: var(--text); border-color: var(--border2); }
-.tab.active { background: var(--bg2); color: var(--text); border-color: var(--border2); }
-.tabcontent { display: none; }
-.tabcontent.active { display: block; }
-
-/* ── skill items (loadout) ── */
-.sk-item {
-  border: 0.5px solid var(--border);
-  border-radius: 8px; padding: 8px 10px; margin-bottom: 5px;
-  cursor: pointer; background: var(--bg3);
-  transition: all .12s;
-}
-.sk-item:hover { border-color: var(--border2); background: var(--bg2); }
-.sk-item.sel-a { border-color: var(--a); background: var(--a-pale); }
-.sk-item.sel-b { border-color: var(--b); background: var(--b-pale); }
-.sk-item.sel-c { border-color: var(--c); background: var(--c-pale); }
-.sk-item.sel-d { border-color: var(--d); background: var(--d-pale); }
-.sk-item.sel-s { border-color: var(--s); background: var(--s-pale); }
-.sk-item.sel-combo { border-color: var(--combo); background: var(--combo-bg); }
-.sk-item.sel-passive { border-color: var(--b); background: var(--b-pale); }
-
-/* ── type buttons ── */
-.type-grid { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
-.btn-type {
-  width: 58px; height: 64px; border-radius: 10px;
-  border: 1.5px solid var(--border); cursor: pointer;
-  font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2px; transition: all .12s; background: var(--bg3); color: var(--muted);
-}
-.btn-type .sub { font-size: 9px; font-family: 'Outfit', sans-serif; font-weight: 500; opacity: .7; }
-.btn-type:hover { border-color: var(--border2); color: var(--text); transform: translateY(-1px); }
-
-.btn-type.type-a { border-color: var(--a-mid); background: var(--a-pale); color: var(--a); }
-.btn-type.type-b { border-color: var(--b-mid); background: var(--b-pale); color: var(--b); }
-.btn-type.type-c { border-color: var(--c-mid); background: var(--c-pale); color: var(--c); }
-.btn-type.type-d { border-color: var(--d-mid); background: var(--d-pale); color: var(--d); }
-.btn-type.type-s { border-color: var(--s-mid); background: var(--s-pale); color: var(--s); }
-
-.btn-type.sel.type-a { background: var(--a); color: #1a0808; border-color: var(--a); }
-.btn-type.sel.type-b { background: var(--b); color: #080f1a; border-color: var(--b); }
-.btn-type.sel.type-c { background: var(--c); color: #081a10; border-color: var(--c); }
-.btn-type.sel.type-d { background: var(--d); color: #10081a; border-color: var(--d); }
-.btn-type.sel.type-s { background: var(--s); color: #1a1508; border-color: var(--s); }
-
-.btn-type.forced { opacity: .25; cursor: not-allowed; transform: none; }
-.btn-type.locked { opacity: .3; cursor: not-allowed; border-style: dashed; }
-
-/* ── dice ── */
-.die {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border-radius: 8px;
-  border: 1.5px solid var(--border2);
-  font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700;
-  margin-right: 5px; background: var(--bg3); color: var(--text);
-  animation: popIn .15s ease;
-}
-.die.one { border-color: var(--win); color: var(--win); background: var(--win-bg); }
-@keyframes popIn { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-/* ── hp bars ── */
-.hp-bar { height: 6px; border-radius: 3px; background: var(--bg3); overflow: hidden; margin-top: 4px; }
-.hp-fill { height: 100%; border-radius: 3px; transition: width .4s; }
-
-/* ── buttons ── */
-.btn {
-  background: var(--bg3); border: 0.5px solid var(--border2);
-  border-radius: 8px; padding: 7px 16px; font-size: 13px; font-weight: 600;
-  cursor: pointer; color: var(--text); font-family: 'Outfit', sans-serif;
-  transition: all .12s;
-}
-.btn:hover { background: var(--bg2); border-color: rgba(255,255,255,0.25); }
-.btn:active { transform: scale(.97); }
-.btn:disabled { opacity: .3; cursor: not-allowed; }
-
-.btn-roll {
-  background: var(--d-pale); border: 1.5px solid var(--d-mid);
-  color: var(--d); padding: 9px 28px; font-size: 14px; font-weight: 700;
-  border-radius: 10px; cursor: pointer; font-family: 'Space Mono', monospace;
-  transition: all .12s;
-}
-.btn-roll:hover { background: var(--d-mid); }
-.btn-roll:disabled { opacity: .3; cursor: not-allowed; }
-
-.btn-stop {
-  background: var(--a-pale); border: 1.5px solid var(--a-mid);
-  color: var(--a); padding: 9px 28px; font-size: 14px; font-weight: 700;
-  border-radius: 10px; cursor: pointer; font-family: 'Space Mono', monospace;
-  transition: all .12s;
-}
-.btn-stop:hover { background: var(--a-mid); }
-
-.btn-clash {
-  width: 100%; padding: 12px; font-size: 15px; font-weight: 700;
-  background: var(--bg3); border: 1.5px solid var(--border2);
-  border-radius: 10px; cursor: pointer; color: var(--text);
-  font-family: 'Space Mono', monospace; letter-spacing: .05em;
-  transition: all .15s; margin-top: 8px;
-}
-.btn-clash:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.3); }
-
-.btn-big { width: 100%; padding: 10px; font-size: 14px; font-weight: 700; }
-
-/* ── log ── */
-.log-e {
-  font-size: 11px; border-left: 2px solid var(--border);
-  padding: 2px 0 2px 8px; margin-bottom: 3px; line-height: 1.5;
-  color: var(--muted); font-family: 'Space Mono', monospace;
-}
-.log-e.w { border-color: var(--win); color: var(--win); }
-.log-e.l { border-color: var(--lose); color: var(--lose); }
-.log-e.p { border-color: var(--parry); color: var(--parry); }
-.log-e.combo { border-color: var(--combo); color: var(--combo); font-weight: 700; }
-.log-e.info { border-color: var(--border2); }
-
-/* ── chips ── */
-.chip {
-  display: inline-block; font-size: 10px; padding: 2px 6px;
-  border-radius: 5px; margin: 1px; font-family: 'Space Mono', monospace;
-  background: var(--bg3); border: 0.5px solid var(--border2); color: var(--muted);
-}
-.chip.match { background: var(--combo-bg); border-color: var(--combo); color: var(--combo); }
-.chip.a { color: var(--a); border-color: var(--a-mid); background: var(--a-pale); }
-.chip.b { color: var(--b); border-color: var(--b-mid); background: var(--b-pale); }
-.chip.c { color: var(--c); border-color: var(--c-mid); background: var(--c-pale); }
-.chip.d { color: var(--d); border-color: var(--d-mid); background: var(--d-pale); }
-.chip.s { color: var(--s); border-color: var(--s-mid); background: var(--s-pale); }
-
-/* ── status tags ── */
-.stag {
-  display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 5px;
-  margin: 1px; font-weight: 600; font-family: 'Space Mono', monospace;
-}
-.stag-buff { background: var(--win-bg); color: var(--win); border: 0.5px solid var(--win); }
-.stag-debuff { background: var(--lose-bg); color: var(--lose); border: 0.5px solid var(--lose); }
-
-/* ── hover info box ── */
-.hover-box {
-  min-height: 44px; font-size: 12px; color: var(--muted);
-  padding: 6px 0; white-space: pre-line; line-height: 1.6;
-  font-family: 'Space Mono', monospace;
-}
-
-/* ── type badge inline ── */
-.tbadge {
-  display: inline-block; font-size: 10px; font-weight: 700;
-  padding: 1px 6px; border-radius: 5px; margin-right: 4px;
-  font-family: 'Space Mono', monospace;
-}
-.tbadge-a { background: var(--a-pale); color: var(--a); border: 0.5px solid var(--a-mid); }
-.tbadge-b { background: var(--b-pale); color: var(--b); border: 0.5px solid var(--b-mid); }
-.tbadge-c { background: var(--c-pale); color: var(--c); border: 0.5px solid var(--c-mid); }
-.tbadge-d { background: var(--d-pale); color: var(--d); border: 0.5px solid var(--d-mid); }
-.tbadge-s { background: var(--s-pale); color: var(--s); border: 0.5px solid var(--s-mid); }
-
-/* ── rows ── */
-.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.f1 { flex: 1; }
-.divider { width: 1px; background: var(--border); align-self: stretch; }
-
-/* ── enemy info accordion ── */
-.einfo-toggle {
-  cursor: pointer; font-size: 11px; color: var(--muted);
-  display: flex; align-items: center; gap: 6px; user-select: none;
-}
-.einfo-toggle:hover { color: var(--text); }
-.einfo-body { display: none; margin-top: 8px; }
-.einfo-body.open { display: block; }
-
-/* ── cnt badge ── */
-.cnt { font-size: 10px; padding: 1px 6px; border-radius: 5px; margin-left: 5px; }
-
-/* ── result screen ── */
-#s-end { text-align: center; padding: 3rem 1rem; }
-#end-icon { font-size: 48px; margin-bottom: 8px; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;min-height:100vh;padding:12px}
+.mono{font-family:'Space Mono',monospace}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.lbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.tabs{display:flex;gap:4px;margin-bottom:10px}
+.tab{flex:1;padding:7px 4px;font-size:12px;font-weight:600;text-align:center;border:0.5px solid var(--border);border-radius:8px;cursor:pointer;color:var(--muted);background:var(--bg3);font-family:'Outfit',sans-serif;transition:all .15s}
+.tab:hover{color:var(--text);border-color:var(--border2)}
+.tab.active{background:var(--bg2);color:var(--text);border-color:var(--border2)}
+.tabcontent{display:none}.tabcontent.active{display:block}
+.sk-item{border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:5px;cursor:pointer;background:var(--bg3);transition:all .12s}
+.sk-item:hover{background:var(--bg2);border-color:var(--border2)}
+.sk-item.sel-a{border-color:var(--a);background:var(--a-pale)}
+.sk-item.sel-b{border-color:var(--b);background:var(--b-pale)}
+.sk-item.sel-c{border-color:var(--c);background:var(--c-pale)}
+.sk-item.sel-d{border-color:var(--d);background:var(--d-pale)}
+.sk-item.sel-s{border-color:var(--s);background:var(--s-pale)}
+.sk-item.sel-combo{border-color:var(--combo);background:var(--combo-bg)}
+.sk-item.sel-passive{border-color:var(--b);background:var(--b-pale)}
+.type-grid{display:flex;gap:8px;justify-content:center;margin-bottom:10px}
+.btn-type{width:58px;height:64px;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;font-family:'Space Mono',monospace;font-size:18px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .12s;background:var(--bg3);color:var(--muted)}
+.btn-type .sub{font-size:9px;font-family:'Outfit',sans-serif;font-weight:500;opacity:.7}
+.btn-type:hover{border-color:var(--border2);color:var(--text);transform:translateY(-1px)}
+.btn-type.type-a{border-color:var(--a-mid);background:var(--a-pale);color:var(--a)}
+.btn-type.type-b{border-color:var(--b-mid);background:var(--b-pale);color:var(--b)}
+.btn-type.type-c{border-color:var(--c-mid);background:var(--c-pale);color:var(--c)}
+.btn-type.type-d{border-color:var(--d-mid);background:var(--d-pale);color:var(--d)}
+.btn-type.type-s{border-color:var(--s-mid);background:var(--s-pale);color:var(--s)}
+.btn-type.sel.type-a{background:var(--a);color:#1a0808;border-color:var(--a)}
+.btn-type.sel.type-b{background:var(--b);color:#080f1a;border-color:var(--b)}
+.btn-type.sel.type-c{background:var(--c);color:#081a10;border-color:var(--c)}
+.btn-type.sel.type-d{background:var(--d);color:#10081a;border-color:var(--d)}
+.btn-type.sel.type-s{background:var(--s);color:#1a1508;border-color:var(--s)}
+.btn-type.forced{opacity:.25;cursor:not-allowed;transform:none}
+.btn-type.locked{opacity:.3;cursor:not-allowed;border-style:dashed}
+.die{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border2);font-family:'Space Mono',monospace;font-size:17px;font-weight:700;margin-right:4px;background:var(--bg3);color:var(--text);animation:popIn .15s ease}
+.die.one{border-color:var(--win);color:var(--win);background:var(--win-bg)}
+@keyframes popIn{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.hp-bar{height:6px;border-radius:3px;background:var(--bg3);overflow:hidden;margin-top:4px}
+.hp-fill{height:100%;border-radius:3px;transition:width .4s}
+.btn{background:var(--bg3);border:0.5px solid var(--border2);border-radius:8px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);font-family:'Outfit',sans-serif;transition:all .12s}
+.btn:hover{background:var(--bg2);border-color:rgba(255,255,255,0.25)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-roll{background:var(--d-pale);border:1.5px solid var(--d-mid);color:var(--d);padding:9px 28px;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;font-family:'Space Mono',monospace;transition:all .12s}
+.btn-roll:hover{background:var(--d-mid)}
+.btn-roll:disabled{opacity:.3;cursor:not-allowed}
+.btn-stop{background:var(--a-pale);border:1.5px solid var(--a-mid);color:var(--a);padding:9px 28px;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;font-family:'Space Mono',monospace;transition:all .12s}
+.btn-stop:hover{background:var(--a-mid)}
+.btn-clash{width:100%;padding:12px;font-size:15px;font-weight:700;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;cursor:pointer;color:var(--text);font-family:'Space Mono',monospace;letter-spacing:.05em;transition:all .15s;margin-top:8px}
+.btn-clash:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.3)}
+.log-e{font-size:11px;border-left:2px solid var(--border);padding:2px 0 2px 8px;margin-bottom:3px;line-height:1.5;color:var(--muted);font-family:'Space Mono',monospace}
+.log-e.w{border-color:var(--win);color:var(--win)}
+.log-e.l{border-color:var(--lose);color:var(--lose)}
+.log-e.p{border-color:var(--parry);color:var(--parry)}
+.log-e.combo{border-color:var(--combo);color:var(--combo);font-weight:700}
+.log-e.info{border-color:var(--border2)}
+.chip{display:inline-block;font-size:10px;padding:2px 6px;border-radius:5px;margin:1px;font-family:'Space Mono',monospace;background:var(--bg3);border:0.5px solid var(--border2);color:var(--muted)}
+.chip.match{background:var(--combo-bg);border-color:var(--combo);color:var(--combo)}
+.chip.a{color:var(--a);border-color:var(--a-mid);background:var(--a-pale)}
+.chip.b{color:var(--b);border-color:var(--b-mid);background:var(--b-pale)}
+.chip.c{color:var(--c);border-color:var(--c-mid);background:var(--c-pale)}
+.chip.d{color:var(--d);border-color:var(--d-mid);background:var(--d-pale)}
+.chip.s{color:var(--s);border-color:var(--s-mid);background:var(--s-pale)}
+.stag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:5px;margin:1px;font-weight:600;font-family:'Space Mono',monospace}
+.stag-buff{background:var(--win-bg);color:var(--win);border:0.5px solid var(--win)}
+.stag-debuff{background:var(--lose-bg);color:var(--lose);border:0.5px solid var(--lose)}
+.hover-box{min-height:44px;font-size:12px;color:var(--muted);padding:6px 0;white-space:pre-line;line-height:1.6;font-family:'Space Mono',monospace}
+.tbadge{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;margin-right:4px;font-family:'Space Mono',monospace}
+.tbadge-a{background:var(--a-pale);color:var(--a);border:0.5px solid var(--a-mid)}
+.tbadge-b{background:var(--b-pale);color:var(--b);border:0.5px solid var(--b-mid)}
+.tbadge-c{background:var(--c-pale);color:var(--c);border:0.5px solid var(--c-mid)}
+.tbadge-d{background:var(--d-pale);color:var(--d);border:0.5px solid var(--d-mid)}
+.tbadge-s{background:var(--s-pale);color:var(--s);border:0.5px solid var(--s-mid)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.f1{flex:1}
+.divider{width:1px;background:var(--border);align-self:stretch}
+.einfo-toggle{cursor:pointer;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;user-select:none}
+.einfo-toggle:hover{color:var(--text)}
+.einfo-body{display:none;margin-top:8px}
+.einfo-body.open{display:block}
+.cnt{font-size:10px;padding:1px 6px;border-radius:5px;margin-left:5px}
+.enemy-card{border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:var(--bg3);cursor:default}
+.run-stat{display:inline-block;font-size:12px;padding:4px 10px;border-radius:6px;margin:3px;background:var(--bg3);border:0.5px solid var(--border2);font-family:'Space Mono',monospace}
 </style>
 </head>
 <body>
 
-<!-- ════════════ LOADOUT ════════════ -->
+<!-- LOADOUT -->
 <div id="s-loadout" class="screen active">
   <div style="margin-bottom:14px">
-    <div class="mono" style="font-size:20px;font-weight:700;letter-spacing:.05em">DICE & DRIVE</div>
+    <div class="mono" style="font-size:20px;font-weight:700;letter-spacing:.05em">DICE &amp; DRIVE</div>
     <div style="font-size:12px;color:var(--muted)">เลือก loadout ก่อนเริ่มเกม</div>
   </div>
-
   <div class="tabs">
     <div class="tab active" id="lt-skills" onclick="loTab('skills')">skills</div>
-    <div class="tab" id="lt-combos" onclick="loTab('combos')">
-      combos <span class="cnt" id="cnt-co" style="background:var(--combo-bg);color:var(--combo)">0/5</span>
-    </div>
-    <div class="tab" id="lt-passives" onclick="loTab('passives')">
-      passive <span class="cnt" id="cnt-pa" style="background:var(--b-pale);color:var(--b)">0/3</span>
-    </div>
+    <div class="tab" id="lt-combos" onclick="loTab('combos')">combos <span class="cnt" id="cnt-co" style="background:var(--combo-bg);color:var(--combo)">0/5</span></div>
+    <div class="tab" id="lt-passives" onclick="loTab('passives')">passive <span class="cnt" id="cnt-pa" style="background:var(--b-pale);color:var(--b)">0/3</span></div>
   </div>
-
   <div id="lo-skills" class="tabcontent active"><div id="skill-list"></div></div>
   <div id="lo-combos" class="tabcontent"><div id="combo-list-lo"></div></div>
   <div id="lo-passives" class="tabcontent"><div id="passive-list-lo"></div></div>
-
   <div style="text-align:right;margin-top:8px">
-    <button class="btn" onclick="startGame()" style="background:var(--d-pale);border-color:var(--d-mid);color:var(--d);font-weight:700">
-      เริ่มเกม →
-    </button>
+    <button class="btn" onclick="startRun()" style="background:var(--d-pale);border-color:var(--d-mid);color:var(--d);font-weight:700">เริ่มเกม →</button>
   </div>
 </div>
 
-<!-- ════════════ FIGHT ════════════ -->
+<!-- FIGHT -->
 <div id="s-fight" class="screen">
-
-  <!-- HP bars -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div class="mono" style="font-size:11px;color:var(--muted)">RUN</div>
+    <div class="mono" style="font-size:11px;color:var(--muted)" id="run-progress"></div>
+  </div>
   <div class="row" style="margin-bottom:10px;align-items:stretch;gap:8px">
     <div class="card f1" style="margin:0">
       <div class="row" style="justify-content:space-between;margin-bottom:2px">
@@ -305,24 +147,20 @@ body {
     <div class="card f1" style="margin:0">
       <div class="row" style="justify-content:space-between;margin-bottom:2px">
         <span style="font-weight:700;font-size:13px" id="enemy-name-hdr">ENEMY</span>
-        <span class="mono" style="font-size:12px;color:var(--muted)" id="e-hp-t">80/80</span>
+        <span class="mono" style="font-size:12px;color:var(--muted)" id="e-hp-t">—</span>
       </div>
       <div class="hp-bar"><div class="hp-fill" id="e-hp-b" style="background:var(--lose);width:100%"></div></div>
       <div style="margin-top:5px;min-height:16px" id="e-status"></div>
     </div>
   </div>
 
-  <!-- Enemy info -->
   <div class="card" style="margin-bottom:10px">
-    <div class="einfo-toggle" onclick="toggleEInfo()">
-      <span id="einfo-label">▶ enemy loadout</span>
-    </div>
+    <div class="einfo-toggle" onclick="toggleEInfo()"><span id="einfo-label">▶ enemy loadout</span></div>
     <div class="einfo-body" id="einfo-body">
       <div style="margin-top:8px;font-size:11px;color:var(--muted);line-height:1.8" id="einfo-content"></div>
     </div>
   </div>
 
-  <!-- Phase Roll -->
   <div id="phase-roll" class="card">
     <div class="lbl" id="roll-turn-lbl">รอบ 1 — phase 1: โยนเต๋า</div>
     <div style="display:flex;gap:10px;margin-bottom:10px">
@@ -352,7 +190,6 @@ body {
     <div id="roll-hint" style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px"></div>
   </div>
 
-  <!-- Phase Skill -->
   <div id="phase-skill" class="card" style="display:none">
     <div class="lbl">phase 2: เลือก skill type</div>
     <div id="dice-summary" style="margin-bottom:12px;padding-bottom:10px;border-bottom:0.5px solid var(--border)"></div>
@@ -361,7 +198,6 @@ body {
     <button class="btn-clash" onclick="doClash()">— CLASH —</button>
   </div>
 
-  <!-- Chain + Combo -->
   <div class="card">
     <div class="lbl">chain history</div>
     <div id="chain-disp" style="margin-bottom:6px;min-height:22px"></div>
@@ -369,446 +205,384 @@ body {
     <div id="combo-prog" style="font-size:10px;line-height:2"></div>
   </div>
 
-  <!-- Battle Log -->
   <div class="card">
     <div class="lbl">battle log</div>
     <div id="blog" style="max-height:140px;overflow-y:auto"></div>
   </div>
 </div>
 
-<!-- ════════════ END ════════════ -->
-<div id="s-end" class="screen">
-  <div id="end-icon"></div>
-  <h2 id="end-title" style="font-size:22px;font-weight:700;margin-bottom:6px"></h2>
-  <p id="end-sub" style="color:var(--muted);font-size:13px;margin-bottom:20px"></p>
-  <button class="btn btn-big" onclick="resetAll()">เล่นใหม่</button>
+<!-- VICTORY (between enemies) -->
+<div id="s-victory" class="screen" style="text-align:center;padding:2rem 1rem">
+  <div style="font-size:32px;margin-bottom:8px">⚔</div>
+  <h2 id="vic-title" style="font-size:20px;font-weight:700;margin-bottom:6px"></h2>
+  <p id="vic-sub" style="color:var(--muted);font-size:13px;margin-bottom:20px"></p>
+  <button class="btn" id="vic-btn" onclick="nextEnemy()" style="background:var(--win-bg);border-color:var(--win);color:var(--win);font-weight:700;padding:10px 24px">ต่อสู้ต่อ →</button>
+</div>
+
+<!-- END (run over) -->
+<div id="s-end" class="screen" style="padding:1.5rem 1rem">
+  <div style="text-align:center;margin-bottom:1.5rem">
+    <div style="font-size:40px;margin-bottom:8px" id="end-icon"></div>
+    <h2 id="end-title" style="font-size:22px;font-weight:700;margin-bottom:4px"></h2>
+    <p id="end-sub" style="color:var(--muted);font-size:13px"></p>
+  </div>
+  <div class="card">
+    <div class="lbl">run summary</div>
+    <div id="end-summary"></div>
+  </div>
+  <div style="text-align:center;margin-top:16px">
+    <button class="btn" onclick="resetAll()" style="background:var(--d-pale);border-color:var(--d-mid);color:var(--d);font-weight:700;padding:10px 28px">เล่นใหม่</button>
+  </div>
 </div>
 
 <script>
 // ════════════════════════════════════════════════════════
-//  DATA — เพิ่ม skill / passive / combo / status / enemy ได้เลย
+// SHARED DATA POOLS — เพิ่ม skill/passive/combo/status/enemy ได้เลย
+// ทั้ง player และ enemy หยิบจาก pool เดียวกัน
 // ════════════════════════════════════════════════════════
 
-// ── SKILLS ──────────────────────────────────────────────
-// onWin / onParry / onLose รับ (ctx) = { pDice, eDice, pRolls, eRolls, G }
-// ctx.deal(target, amount)  — "player" or "enemy"
-// ctx.heal(target, amount)
-// ctx.addStatus(target, statusId, potency, count)
-// ctx.addBuff(target, key, value)
-const SKILLS = {
-  a1: {
-    id:'a1', name:'slash', type:'A',
-    desc:'onWin: dmg=ผลรวมเต๋า, debuff ศัตรูห้ามใช้ B รอบหน้า\nonParry: dmg 1\nonLose: —',
-    onWin(ctx) {
-      ctx.deal('enemy', ctx.pSum);
-      ctx.addBuff('enemy','lockedType','B');
-      ctx.log(`slash: dmg ${ctx.pSum} + debuff ห้ามใช้ B`,'w');
-    },
-    onParry(ctx) { ctx.deal('enemy',1); ctx.log('slash parry: dmg 1','p'); },
-    onLose() {}
-  },
-  a2: {
-    id:'a2', name:'quick slash', type:'A',
+// ── SKILL POOL ──────────────────────────────────────────
+// skill เขียนจากมุมมอง "ผู้ใช้สกิล" เสมอ ไม่ว่าจะเป็น player หรือ enemy
+// สิ่งที่ return จาก onWin/onParry/onLose คือ effect object:
+//   { dmgOpp, dmgSelf, healSelf, healOpp, debuffOpp, statusSelf, statusOpp }
+// engine จะเอาไปใส่ฝั่งที่ถูกต้องเอง
+//
+// sc = skill context: { myDice, oppDice, myRolls, oppRolls, mySum, oppSum }
+// ตัวผู้ใช้ = "my" | ฝั่งตรงข้าม = "opp"
+
+function fx(o){return Object.assign({dmgOpp:0,dmgSelf:0,healSelf:0,healOpp:0,debuffOpp:null,statusSelf:null,statusOpp:null,log:''},o)}
+
+const SKILL_POOL = {
+  // — TYPE A —
+  slash:{id:'slash',name:'slash',type:'A',
+    desc:'onWin: dmg=ผลรวมเต๋า + debuff opp ห้ามใช้ B\nonParry: dmg 1\nonLose: —',
+    onWin(sc){return fx({dmgOpp:sc.mySum,debuffOpp:{lockedType:'B'},log:'slash: dmg '+sc.mySum+' +debuff noB'})},
+    onParry(sc){return fx({dmgOpp:1,log:'slash parry: dmg 1'})},
+    onLose(sc){return fx({log:'slash lose: —'})}},
+
+  quickslash:{id:'quickslash',name:'quick slash',type:'A',
     desc:'onWin: dmg=ผลรวมเต๋า+2\nonParry: dmg 2\nonLose: —',
-    onWin(ctx) { const d=ctx.pSum+2; ctx.deal('enemy',d); ctx.log(`quick slash: dmg ${d}`,'w'); },
-    onParry(ctx) { ctx.deal('enemy',2); ctx.log('quick slash parry: dmg 2','p'); },
-    onLose() {}
-  },
-  a3: {
-    id:'a3', name:'one cut', type:'A',
+    onWin(sc){return fx({dmgOpp:sc.mySum+2,log:'quick slash: dmg '+(sc.mySum+2)})},
+    onParry(sc){return fx({dmgOpp:2,log:'quick slash parry: dmg 2'})},
+    onLose(sc){return fx({log:'quick slash lose: —'})}},
+
+  onecut:{id:'onecut',name:'one cut',type:'A',
     desc:'onWin: dmg=จำนวนหน้า[1]×10 (ถ้าไม่มี=1)\nonParry: dmg 1 ใส่ทั้งคู่\nonLose: dmg 1 ใส่ตัวเอง',
-    onWin(ctx) {
-      const ones = ctx.pDice.filter(d=>d===1).length;
-      const dmg = ones > 0 ? ones*10 : 1;
-      ctx.deal('enemy', dmg);
-      ctx.log(`one cut: หน้า[1]×${ones} → dmg ${dmg}`,'w');
-    },
-    onParry(ctx) { ctx.deal('enemy',1); ctx.deal('player',1); ctx.log('one cut parry: dmg 1 ทั้งคู่','p'); },
-    onLose(ctx) { ctx.deal('player',1); ctx.log('one cut lose: dmg 1 ใส่ตัวเอง','l'); }
-  },
-  b1: {
-    id:'b1', name:'dash', type:'B',
-    desc:'onWin: dmg=ผลรวมเต๋า, debuff ศัตรูห้ามใช้ C รอบหน้า\nonParry: dmg 1\nonLose: —',
-    onWin(ctx) {
-      ctx.deal('enemy', ctx.pSum);
-      ctx.addBuff('enemy','lockedType','C');
-      ctx.log(`dash: dmg ${ctx.pSum} + debuff ห้ามใช้ C`,'w');
-    },
-    onParry(ctx) { ctx.deal('enemy',1); ctx.log('dash parry: dmg 1','p'); },
-    onLose() {}
-  },
-  c1: {
-    id:'c1', name:'block', type:'C',
+    onWin(sc){const o=sc.myDice.filter(d=>d===1).length;const dmg=o>0?o*10:1;return fx({dmgOpp:dmg,log:'one cut: [1]×'+o+'='+dmg})},
+    onParry(sc){return fx({dmgOpp:1,dmgSelf:1,log:'one cut parry: dmg 1 ทั้งคู่'})},
+    onLose(sc){return fx({dmgSelf:1,log:'one cut lose: dmg 1 ตัวเอง'})}},
+
+  // — TYPE B —
+  dash:{id:'dash',name:'dash',type:'B',
+    desc:'onWin: dmg=ผลรวมเต๋า + debuff opp ห้ามใช้ C\nonParry: dmg 1\nonLose: —',
+    onWin(sc){return fx({dmgOpp:sc.mySum,debuffOpp:{lockedType:'C'},log:'dash: dmg '+sc.mySum+' +debuff noC'})},
+    onParry(sc){return fx({dmgOpp:1,log:'dash parry: dmg 1'})},
+    onLose(sc){return fx({log:'dash lose: —'})}},
+
+  heavyhit:{id:'heavyhit',name:'heavy hit',type:'B',
+    desc:'onWin: dmg=ผลรวมเต๋า×1.5\nonParry: —\nonLose: dmg 2 ใส่ตัวเอง',
+    onWin(sc){const d=Math.floor(sc.mySum*1.5);return fx({dmgOpp:d,log:'heavy hit: dmg '+d})},
+    onParry(sc){return fx({log:'heavy hit parry: —'})},
+    onLose(sc){return fx({dmgSelf:2,log:'heavy hit lose: dmg 2 ตัวเอง'})}},
+
+  // — TYPE C —
+  block:{id:'block',name:'block',type:'C',
     desc:'onWin: heal self=จำนวนครั้งโยน×2\nonParry: dmg 1\nonLose: —',
-    onWin(ctx) { const h=ctx.pRolls*2; ctx.heal('player',h); ctx.log(`block: heal ${h}`,'w'); },
-    onParry(ctx) { ctx.deal('enemy',1); ctx.log('block parry: dmg 1','p'); },
-    onLose() {}
-  },
-  c2: {
-    id:'c2', name:'submission', type:'C',
-    desc:'onWin: dmg=ผลรวมเต๋าของศัตรู\nonParry: —\nonLose: —',
-    onWin(ctx) { ctx.deal('enemy', ctx.eSum); ctx.log(`submission: dmg=เต๋าศัตรู ${ctx.eSum}`,'w'); },
-    onParry() {},
-    onLose() {}
-  },
-  d1: {
-    id:'d1', name:'heal', type:'D',
-    desc:'onWin: heal self=ผลรวมเต๋า\nonParry: —\nonLose: buff mustwin รอบหน้า (clash ออก W แน่นอน)',
-    onWin(ctx) { ctx.heal('player', ctx.pSum); ctx.log(`heal: heal ${ctx.pSum}`,'w'); },
-    onParry() {},
-    onLose(ctx) { ctx.addStatus('player','mustwin',1,1); ctx.log('heal lose: buff mustwin รอบหน้า','w'); }
-  },
-  s1: {
-    id:'s1', name:'nothing', type:'S',
-    desc:'ไม่มีผล\n(บังคับใช้เมื่อผลรวมเต๋า>11)',
-    onWin(){}, onParry(){}, onLose(){}
-  },
+    onWin(sc){const h=sc.myRolls*2;return fx({healSelf:h,log:'block: heal '+h})},
+    onParry(sc){return fx({dmgOpp:1,log:'block parry: dmg 1'})},
+    onLose(sc){return fx({log:'block lose: —'})}},
+
+  submission:{id:'submission',name:'submission',type:'C',
+    desc:'onWin: dmg=ผลรวมเต๋าฝั่งตรงข้าม\nonParry: —\nonLose: —',
+    onWin(sc){return fx({dmgOpp:sc.oppSum,log:'submission: dmg=oppSum '+sc.oppSum})},
+    onParry(sc){return fx({log:'submission parry: —'})},
+    onLose(sc){return fx({log:'submission lose: —'})}},
+
+  counter:{id:'counter',name:'counter',type:'C',
+    desc:'onWin: heal self=ผลรวมเต๋า÷2\nonParry: dmg 3\nonLose: —',
+    onWin(sc){const h=Math.floor(sc.mySum/2);return fx({healSelf:h,log:'counter: heal '+h})},
+    onParry(sc){return fx({dmgOpp:3,log:'counter parry: dmg 3'})},
+    onLose(sc){return fx({log:'counter lose: —'})}},
+
+  // — TYPE D —
+  heal:{id:'heal',name:'heal',type:'D',
+    desc:'onWin: heal self=ผลรวมเต๋า\nonParry: —\nonLose: buff mustwin รอบหน้า',
+    onWin(sc){return fx({healSelf:sc.mySum,log:'heal: heal '+sc.mySum})},
+    onParry(sc){return fx({log:'heal parry: —'})},
+    onLose(sc){return fx({statusSelf:{id:'mustwin',potency:1,count:1},log:'heal lose: buff mustwin'})}},
+
+  meditate:{id:'meditate',name:'meditate',type:'D',
+    desc:'onWin: heal self=โยน×3 + regen 2p 2c\nonParry: heal 1\nonLose: —',
+    onWin(sc){const h=sc.myRolls*3;return fx({healSelf:h,statusSelf:{id:'regen',potency:2,count:2},log:'meditate: heal '+h+' +regen'})},
+    onParry(sc){return fx({healSelf:1,log:'meditate parry: heal 1'})},
+    onLose(sc){return fx({log:'meditate lose: —'})}},
+
+  // — TYPE S —
+  nothing:{id:'nothing',name:'nothing',type:'S',
+    desc:'ไม่มีผล (บังคับใช้เมื่อผลรวมเต๋า>11)',
+    onWin(sc){return fx({log:'nothing: —'})},
+    onParry(sc){return fx({log:'nothing: —'})},
+    onLose(sc){return fx({log:'nothing: —'})}},
 };
 
-// ── PASSIVES ──────────────────────────────────────────────
-// hook: afterClash(pResult, ctx) / onRoll(dice, ctx)
-const PASSIVES = {
-  pa1: {
-    id:'pa1', name:'battle rage',
-    desc:'ชนะ clash สะสม rage +1 ครบ 3 → dmg 5 ทันที',
-    state: { rage:0 },
-    afterClash(pR, ctx) {
-      if(pR==='W') {
-        this.state.rage++;
-        ctx.log(`battle rage: ${this.state.rage}/3`,'info');
-        if(this.state.rage>=3) { ctx.deal('enemy',5); this.state.rage=0; ctx.log('battle rage: trigger! dmg 5','combo'); }
-      }
-    }
-  },
-  pa2: {
-    id:'pa2', name:'iron skin',
-    desc:'hp<50% ทุกครั้งโดน dmg ลด 1',
-    damageReduction(ctx) { return ctx.G.p.hp < ctx.G.p.maxHp/2 ? 1 : 0; }
-  },
-  pa3: {
-    id:'pa3', name:'lucky dice',
+// ── PASSIVE POOL ────────────────────────────────────────
+const PASSIVE_POOL = {
+  battlerage:{id:'battlerage',name:'battle rage',
+    desc:'ชนะ clash → rage+1, ครบ 3 → dmg 5 ทันที',
+    _rage:0,
+    afterClash(pR,ctx,side){
+      if(side!=='player')return;
+      if(pR==='W'){this._rage++;ctx.log('battle rage: '+this._rage+'/3','info');if(this._rage>=3){ctx.deal('enemy',5);this._rage=0;ctx.log('battle rage: trigger! dmg 5','combo')}}
+    }},
+  ironskin:{id:'ironskin',name:'iron skin',
+    desc:'hp<50% → ลด dmg ที่รับ 1',
+    damageReduction(isPlayer,g){return isPlayer&&g.p.hp<g.p.maxHp/2?1:0}},
+  luckydice:{id:'luckydice',name:'lucky dice',
     desc:'โยนครั้งแรกออก 6 → ได้ free roll',
-    onRoll(val, rollNum, ctx) {
-      if(rollNum===1 && val===6) {
-        ctx.log('lucky dice: ได้ free roll!','w');
-        return true; // signal free roll
-      }
-      return false;
-    }
-  },
-  pa4: {
-    id:'pa4', name:'comeback',
+    onRoll(val,rollNum,ctx){if(rollNum===1&&val===6){ctx.log('lucky dice: free roll!','w');return true}return false}},
+  comeback:{id:'comeback',name:'comeback',
     desc:'แพ้ 2 รอบติด → speed +3 รอบถัดไป',
-    speedBonus(ctx) { return ctx.G.ps.loseStreak>=2 ? 3 : 0; }
-  },
-  pa5: {
-    id:'pa5', name:'momentum',
-    desc:'ชนะรอบก่อน → dmg รอบนี้ +2',
-    dmgBonus(ctx) { return ctx.G.ps.lastResult==='W' ? 2 : 0; }
-  },
+    speedBonus(g){return g.ps.loseStreak>=2?3:0}},
+  momentum:{id:'momentum',name:'momentum',
+    desc:'ชนะรอบก่อน → dmg +2 รอบนี้',
+    dmgBonus(g){return g.ps.lastResult==='W'?2:0}},
+  thorns:{id:'thorns',name:'thorns',
+    desc:'ทุกครั้งโดน dmg คืน 1 ให้ศัตรู',
+    onTakeDmg(ctx){ctx.deal('enemy',1);ctx.log('thorns: reflect 1','info')}},
 };
 
-// ── STATUS EFFECTS ──────────────────────────────────────────────
-// priority: ต่ำ = trigger ก่อน (heal-type ควรต่ำ, damage-type สูง)
-// trigger: 'turnStart' | 'turnEnd' | 'onClashReveal'
-// effect(entity, status, ctx) — entity = G.p หรือ G.e
-const STATUS_EFFECTS = {
-  regen: {
-    id:'regen', name:'regen', priority:10, trigger:'turnStart',
-    effect(entity, status, ctx) {
-      ctx.healEntity(entity, status.potency);
-      ctx.log(`regen: heal ${status.potency}`,'w');
-      status.count--;
-    }
-  },
-  burn: {
-    id:'burn', name:'burn', priority:30, trigger:'turnEnd',
-    effect(entity, status, ctx) {
-      ctx.dealEntity(entity, status.potency);
-      ctx.log(`burn: dmg ${status.potency}`,'l');
-      status.count--;
-    }
-  },
-  bleed: {
-    id:'bleed', name:'bleed', priority:40, trigger:'turnEnd',
-    // count ลดตาม dice hits ของ self
-    effect(entity, status, ctx) {
-      const hits = ctx.G.pDice.length; // จำนวนเต๋าที่โยน
-      const dmg = status.potency * hits;
-      ctx.dealEntity(entity, dmg);
-      ctx.log(`bleed: dmg ${status.potency}×${hits}=${dmg}`,'l');
-      status.count -= hits;
-    }
-  },
-  mustwin: {
-    id:'mustwin', name:'must win', priority:1, trigger:'onClashReveal',
-    // เปลี่ยนผล clash เป็น W ก่อน resolve
-    effect(entity, status, ctx) {
-      if(entity === ctx.G.p) {
-        ctx.overrideResult('W','L');
-        ctx.log('mustwin: เปลี่ยนผลเป็น W!','w');
-      }
-      status.count--;
-    }
-  },
+// ── STATUS POOL ─────────────────────────────────────────
+// priority ต่ำ = trigger ก่อน | trigger: turnStart / turnEnd / onClashReveal
+const STATUS_POOL = {
+  regen:{id:'regen',name:'regen',priority:10,trigger:'turnStart',
+    effect(entity,s,ctx){ctx.healEntity(entity,s.potency);ctx.log('regen: heal '+s.potency,'w');s.count--}},
+  burn:{id:'burn',name:'burn',priority:30,trigger:'turnEnd',
+    effect(entity,s,ctx){ctx.dealEntity(entity,s.potency);ctx.log('burn: dmg '+s.potency,'l');s.count--}},
+  bleed:{id:'bleed',name:'bleed',priority:40,trigger:'turnEnd',
+    effect(entity,s,ctx){const hits=ctx.G.pDice.length;const dmg=s.potency*hits;ctx.dealEntity(entity,dmg);ctx.log('bleed: '+s.potency+'x'+hits+'='+dmg,'l');s.count-=hits}},
+  mustwin:{id:'mustwin',name:'must win',priority:1,trigger:'onClashReveal',
+    effect(entity,s,ctx){if(entity===ctx.G.p){ctx.overrideResult('W','L');ctx.log('mustwin: เปลี่ยนผลเป็น W!','w')}s.count--}},
 };
 
-// ── COMBO PATTERNS ──────────────────────────────────────────────
-// pattern: array ของ step
-// step: { type: 'A'|'B'|'C'|'D'|'S'|'*', result: 'W'|'L'|'P'|'*' }
-// '*' = ไม่สนใจ
-const COMBOS = {
-  co1: {
-    id:'co1', name:'double strike',
+// ── COMBO POOL ──────────────────────────────────────────
+// step: {type:'A'|'*', result:'W'|'L'|'P'|'*'}
+// side: 'player'|'enemy' — combo ของใครก็ใช้ deal ฝั่งตรงข้าม
+const COMBO_POOL = {
+  doublestrike:{id:'doublestrike',name:'double strike',
     pattern:[{type:'A',result:'*'},{type:'A',result:'W'}],
-    desc:'A any → A win → deal 8',
-    effect(ctx) { ctx.deal('enemy',8); ctx.log('combo double strike: dmg 8','combo'); }
-  },
-  co2: {
-    id:'co2', name:'riposte',
+    desc:'A* → AW → deal 8',
+    effect(ctx){ctx.deal('enemy',8);ctx.log('combo double strike: dmg 8','combo')}},
+  riposte:{id:'riposte',name:'riposte',
     pattern:[{type:'C',result:'W'},{type:'A',result:'W'}],
-    desc:'C win → A win → deal 6 + heal 3',
-    effect(ctx) { ctx.deal('enemy',6); ctx.heal('player',3); ctx.log('combo riposte: dmg 6 heal 3','combo'); }
-  },
-  co3: {
-    id:'co3', name:'full counter',
+    desc:'CW → AW → deal 6 + heal 3',
+    effect(ctx){ctx.deal('enemy',6);ctx.heal('player',3);ctx.log('combo riposte: dmg 6 heal 3','combo')}},
+  fullcounter:{id:'fullcounter',name:'full counter',
     pattern:[{type:'C',result:'W'},{type:'C',result:'W'},{type:'C',result:'W'}],
-    desc:'C win ×3 → heal 12',
-    effect(ctx) { ctx.heal('player',12); ctx.log('combo full counter: heal 12','combo'); }
-  },
-  co4: {
-    id:'co4', name:'lucky strike',
+    desc:'CW×3 → heal 12',
+    effect(ctx){ctx.heal('player',12);ctx.log('combo full counter: heal 12','combo')}},
+  luckystrike:{id:'luckystrike',name:'lucky strike',
     pattern:[{type:'D',result:'W'},{type:'A',result:'W'}],
-    desc:'D win → A win → deal 10',
-    effect(ctx) { ctx.deal('enemy',10); ctx.log('combo lucky strike: dmg 10','combo'); }
-  },
-  co5: {
-    id:'co5', name:'rally',
+    desc:'DW → AW → deal 10',
+    effect(ctx){ctx.deal('enemy',10);ctx.log('combo lucky strike: dmg 10','combo')}},
+  rally:{id:'rally',name:'rally',
     pattern:[{type:'D',result:'L'},{type:'D',result:'W'}],
-    desc:'D lose → D win → heal 8 + ลบ debuff',
-    effect(ctx) { ctx.heal('player',8); ctx.G.p.buffs={}; ctx.log('combo rally: heal 8 + ลบ debuff','combo'); }
-  },
-  co6: {
-    id:'co6', name:'blade rush',
+    desc:'DL → DW → heal 8 + ลบ debuff',
+    effect(ctx){ctx.heal('player',8);ctx.G.p.buffs={};ctx.log('combo rally: heal 8 + ลบ debuff','combo')}},
+  bladerush:{id:'bladerush',name:'blade rush',
     pattern:[{type:'A',result:'*'},{type:'A',result:'*'},{type:'A',result:'W'}],
-    desc:'A any → A any → A win → deal 15',
-    effect(ctx) { ctx.deal('enemy',15); ctx.log('combo blade rush: dmg 15','combo'); }
-  },
-  co7: {
-    id:'co7', name:'iron wall',
+    desc:'A* → A* → AW → deal 15',
+    effect(ctx){ctx.deal('enemy',15);ctx.log('combo blade rush: dmg 15','combo')}},
+  ironwall:{id:'ironwall',name:'iron wall',
     pattern:[{type:'C',result:'W'},{type:'C',result:'W'}],
-    desc:'C win ×2 → heal 6',
-    effect(ctx) { ctx.heal('player',6); ctx.log('combo iron wall: heal 6','combo'); }
-  },
-  co8: {
-    id:'co8', name:'desperation',
+    desc:'CW×2 → heal 6',
+    effect(ctx){ctx.heal('player',6);ctx.log('combo iron wall: heal 6','combo')}},
+  desperation:{id:'desperation',name:'desperation',
     pattern:[{type:'D',result:'L'},{type:'D',result:'L'},{type:'A',result:'W'}],
-    desc:'D lose ×2 → A win → deal 12',
-    effect(ctx) { ctx.deal('enemy',12); ctx.log('combo desperation: dmg 12','combo'); }
-  },
+    desc:'DL×2 → AW → deal 12',
+    effect(ctx){ctx.deal('enemy',12);ctx.log('combo desperation: dmg 12','combo')}},
+  bursttide:{id:'bursttide',name:'burst tide',
+    pattern:[{type:'B',result:'W'},{type:'B',result:'W'}],
+    desc:'BW×2 → deal 10',
+    effect(ctx){ctx.deal('enemy',10);ctx.log('combo burst tide: dmg 10','combo')}},
+  zenflow:{id:'zenflow',name:'zen flow',
+    pattern:[{type:'D',result:'W'},{type:'C',result:'W'},{type:'D',result:'W'}],
+    desc:'DW → CW → DW → heal 15',
+    effect(ctx){ctx.heal('player',15);ctx.log('combo zen flow: heal 15','combo')}},
 };
 
-// ── ENEMIES ──────────────────────────────────────────────────────
-const ENEMIES = {
-  slime: {
-    id:'slime', name:'SLIME', hp:60,
-    skills:{ A:'ea', B:'eb', C:'ec', D:'ed', S:'es' },
-    passives:[], combos:[],
-    aiPick(locked) {
-      const pool=['A','B','C'].filter(t=>t!==locked);
-      return pool[Math.floor(Math.random()*pool.length)]||'S';
-    }
-  },
-  ironGolem: {
-    id:'ironGolem', name:'IRON GOLEM', hp:100,
-    skills:{ A:'ea', B:'eb', C:'ec', D:'ed', S:'es' },
-    passives:['pa2'], combos:['co3'],
-    aiPick(locked) {
-      const pool=['A','B','C','D'].filter(t=>t!==locked);
-      return pool[Math.floor(Math.random()*pool.length)]||'S';
-    }
-  },
-  darkKnight: {
-    id:'darkKnight', name:'DARK KNIGHT', hp:80,
-    skills:{ A:'ea', B:'eb', C:'ec', D:'ed', S:'es' },
-    passives:['pa1'], combos:['co1','co6'],
-    aiPick(locked) {
-      // dark knight ชอบ A
-      const pool=['A','A','A','B','D'].filter(t=>t!==locked);
-      return pool[Math.floor(Math.random()*pool.length)]||'S';
-    }
-  },
+// ── ENEMY POOL ──────────────────────────────────────────
+// skills: {A, B, C, D, S} — id ชี้ไปที่ SKILL_POOL (ใช้ pool เดียวกัน)
+// passives/combos: id ชี้ไปที่ PASSIVE_POOL / COMBO_POOL
+// aiPick(lockedType, eChain) → type string
+// tier: 1=easy, 2=mid, 3=hard
+const ENEMY_POOL = {
+  slime:{id:'slime',name:'SLIME',tier:1,hp:55,
+    skills:{A:'slash',B:'dash',C:'block',D:'heal',S:'nothing'},
+    passives:[],combos:[],
+    aiPick(locked){return pick(['A','B','C'].filter(t=>t!==locked))||'S'}},
+  goblin:{id:'goblin',name:'GOBLIN',tier:1,hp:50,
+    skills:{A:'quickslash',B:'dash',C:'counter',D:'heal',S:'nothing'},
+    passives:['luckydice'],combos:['doublestrike'],
+    aiPick(locked){return pick(['A','A','B'].filter(t=>t!==locked))||'S'}},
+  zombie:{id:'zombie',name:'ZOMBIE',tier:2,hp:80,
+    skills:{A:'slash',B:'heavyhit',C:'block',D:'meditate',S:'nothing'},
+    passives:['ironskin'],combos:['ironwall'],
+    aiPick(locked){return pick(['A','B','D','D'].filter(t=>t!==locked))||'S'}},
+  irongolem:{id:'irongolem',name:'IRON GOLEM',tier:2,hp:100,
+    skills:{A:'heavyhit',B:'dash',C:'block',D:'meditate',S:'nothing'},
+    passives:['ironskin','comeback'],combos:['fullcounter','ironwall'],
+    aiPick(locked){return pick(['A','B','C','D'].filter(t=>t!==locked))||'S'}},
+  darkknight:{id:'darkknight',name:'DARK KNIGHT',tier:3,hp:90,
+    skills:{A:'onecut',B:'heavyhit',C:'submission',D:'heal',S:'nothing'},
+    passives:['battlerage','momentum'],combos:['bladerush','doublestrike'],
+    aiPick(locked){return pick(['A','A','A','B','D'].filter(t=>t!==locked))||'S'}},
+  vampire:{id:'vampire',name:'VAMPIRE',tier:3,hp:75,
+    skills:{A:'slash',B:'dash',C:'counter',D:'meditate',S:'nothing'},
+    passives:['thorns','momentum'],combos:['riposte','zenflow'],
+    aiPick(locked){return pick(['A','C','D','D'].filter(t=>t!==locked))||'S'}},
 };
 
-// ── Enemy skill pool (shared) ──────────────────────────────────
-const ENEMY_SKILLS = {
-  ea: { id:'ea', name:'claw',   type:'A', desc:'onWin: dmg สุ่ม 3-7' },
-  eb: { id:'eb', name:'smash',  type:'B', desc:'onWin: dmg สุ่ม 4-8' },
-  ec: { id:'ec', name:'guard',  type:'C', desc:'onWin: heal 4' },
-  ed: { id:'ed', name:'regen',  type:'D', desc:'onWin: heal 5' },
-  es: { id:'es', name:'idle',   type:'S', desc:'ไม่มีผล' },
+// run sequence by tier
+const ENEMY_BY_TIER = {
+  1: Object.values(ENEMY_POOL).filter(e=>e.tier===1).map(e=>e.id),
+  2: Object.values(ENEMY_POOL).filter(e=>e.tier===2).map(e=>e.id),
+  3: Object.values(ENEMY_POOL).filter(e=>e.tier===3).map(e=>e.id),
 };
 
-// ── CLASH TABLE ──────────────────────────────────────────────────
-const CLASH_T = {
-  'A-A':'PP','A-B':'WL','A-C':'LW','A-D':'WL','A-S':'WW',
-  'B-B':'PP','B-C':'WL','B-D':'WL','B-S':'WW',
-  'C-C':'LL','C-D':'LW','C-S':'WW',
-  'D-D':'WW','D-S':'WW','S-S':'WW'
-};
+function pick(arr){return arr.length?arr[Math.floor(Math.random()*arr.length)]:null}
 
-function getClashRaw(t1,t2){
-  let k=t1+'-'+t2; if(CLASH_T[k]) return CLASH_T[k];
-  k=t2+'-'+t1; if(CLASH_T[k]){const r=CLASH_T[k];return r[1]+r[0];}
-  return 'PP';
-}
+// ── CLASH TABLE ─────────────────────────────────────────
+const CLASH_T={'A-A':'PP','A-B':'WL','A-C':'LW','A-D':'WL','A-S':'WW','B-B':'PP','B-C':'WL','B-D':'WL','B-S':'WW','C-C':'LL','C-D':'LW','C-S':'WW','D-D':'WW','D-S':'WW','S-S':'WW'};
+function getClashRaw(t1,t2){let k=t1+'-'+t2;if(CLASH_T[k])return CLASH_T[k];k=t2+'-'+t1;if(CLASH_T[k]){const r=CLASH_T[k];return r[1]+r[0]}return'PP'}
 
 // ════════════════════════════════════════════════════════
-//  GAME STATE
+// GAME STATE
 // ════════════════════════════════════════════════════════
-let G = {};
+let G={};
+let RUN={enemies:[],idx:0,totalTurns:0,log:[]};
 
-function initG() {
-  G = {
-    p:  { hp:100, maxHp:100, buffs:{}, statuses:[] },
-    e:  { hp:80,  maxHp:80,  buffs:{}, statuses:[] },
-    pDice:[], pRolls:0,
-    eDice:[], eRolls:0,
-    selectedType: null,
-    phase: 'roll',
-    chain: [],   // [ {type, result} ]
-    turn: 0,
-    // player loadout
-    selectedSkills:   { A:'a1', B:'b1', C:'c1', D:'d1', S:'s1' },
-    selectedCombos:   ['co1','co2','co4'],
-    selectedPassives: ['pa1'],
-    // passive runtime state
-    ps: { rage:0, lastResult:null, loseStreak:0 },
-    // current enemy
-    currentEnemy: 'slime',
-    eRolled: false,
-    currentEType: null,
-    // clash result override (for mustwin etc.)
-    resultOverride: null,
+function initG(enemyId){
+  const en=ENEMY_POOL[enemyId];
+  G={
+    p:{hp:G.p?G.p.hp:100,maxHp:100,buffs:{},statuses:[]},
+    e:{hp:en.hp,maxHp:en.hp,buffs:{},statuses:[]},
+    pDice:[],pRolls:0,eDice:[],eRolls:0,
+    selectedType:null,phase:'roll',
+    chain:[],turn:0,
+    selectedSkills:G.selectedSkills||{A:'slash',B:'dash',C:'block',D:'heal',S:'nothing'},
+    selectedCombos:G.selectedCombos||['doublestrike','riposte','luckystrike'],
+    selectedPassives:G.selectedPassives||['battlerage'],
+    ps:{rage:0,lastResult:null,loseStreak:0},
+    currentEnemyId:enemyId,
+    eRolled:false,currentEType:null,
+    resultOverride:null,
   };
-  // reset passive states
-  Object.values(PASSIVES).forEach(p=>{ if(p.state) p.state = { rage:0 }; });
+  // reset passive runtime state
+  Object.values(PASSIVE_POOL).forEach(p=>{if('_rage' in p)p._rage=0});
 }
 
 // ════════════════════════════════════════════════════════
-//  LOADOUT UI
+// LOADOUT UI
 // ════════════════════════════════════════════════════════
-function loTab(t) {
+function loTab(t){
   ['skills','combos','passives'].forEach(x=>{
-    document.getElementById('lt-'+x).classList.toggle('active', x===t);
-    document.getElementById('lo-'+x).classList.toggle('active', x===t);
+    document.getElementById('lt-'+x).classList.toggle('active',x===t);
+    document.getElementById('lo-'+x).classList.toggle('active',x===t);
   });
 }
 
-function renderLoadout() {
-  const types = ['A','B','C','D','S'];
-  const tnames = {A:'aggressive',B:'burst',C:'counter',D:'defensive',S:'special'};
-  document.getElementById('skill-list').innerHTML = types.map(t=>{
-    const skills = Object.values(SKILLS).filter(s=>s.type===t);
-    const selId = G.selectedSkills[t];
-    return `<div style="margin-bottom:12px">
+function renderLoadout(){
+  const types=['A','B','C','D','S'];
+  const tnames={A:'aggressive',B:'burst',C:'counter',D:'defensive',S:'special'};
+  const selSkills=G.selectedSkills;
+  document.getElementById('skill-list').innerHTML=types.map(t=>{
+    const skills=Object.values(SKILL_POOL).filter(s=>s.type===t);
+    return`<div style="margin-bottom:12px">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
         <span class="tbadge tbadge-${t.toLowerCase()}">${t}</span>
         <span style="font-size:12px;color:var(--muted)">${tnames[t]}</span>
       </div>
-      ${skills.map(s=>`
-        <div class="sk-item${selId===s.id?' sel-'+t.toLowerCase():''}" onclick="pickSkill('${t}','${s.id}')">
-          <div style="font-weight:600;font-size:13px">${s.name}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px;white-space:pre-line;line-height:1.5">${s.desc}</div>
-        </div>`).join('')}
+      ${skills.map(s=>`<div class="sk-item${selSkills[t]===s.id?' sel-'+t.toLowerCase():''}" onclick="pickSkill('${t}','${s.id}')">
+        <div style="font-weight:600;font-size:13px">${s.name}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;white-space:pre-line;line-height:1.5">${s.desc}</div>
+      </div>`).join('')}
     </div>`;
   }).join('');
 
-  document.getElementById('combo-list-lo').innerHTML = Object.values(COMBOS).map(c=>{
-    const sel = G.selectedCombos.includes(c.id);
-    const patStr = c.pattern.map(s=>{
-      const tc = s.type==='*'?'':''+s.type.toLowerCase();
-      const rc = s.result==='*'?'any':s.result;
-      return `<span class="chip ${tc}">${s.type}${s.result==='*'?'*':s.result}</span>`;
-    }).join(' ');
-    return `<div class="sk-item${sel?' sel-combo':''}" onclick="toggleCombo('${c.id}')">
+  document.getElementById('combo-list-lo').innerHTML=Object.values(COMBO_POOL).map(c=>{
+    const sel=G.selectedCombos.includes(c.id);
+    const pat=c.pattern.map(s=>`<span class="chip ${s.type==='*'?'':s.type.toLowerCase()}">${s.type}${s.result}</span>`).join('');
+    return`<div class="sk-item${sel?' sel-combo':''}" onclick="toggleCombo('${c.id}')">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <span style="font-weight:600;font-size:13px">${c.name}</span>
-        <span>${patStr}</span>
+        <span style="font-weight:600;font-size:13px">${c.name}</span><span>${pat}</span>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:3px">${c.desc}</div>
     </div>`;
   }).join('');
 
-  document.getElementById('passive-list-lo').innerHTML = Object.values(PASSIVES).map(p=>{
-    const sel = G.selectedPassives.includes(p.id);
-    return `<div class="sk-item${sel?' sel-passive':''}" onclick="togglePassive('${p.id}')">
+  document.getElementById('passive-list-lo').innerHTML=Object.values(PASSIVE_POOL).map(p=>{
+    const sel=G.selectedPassives.includes(p.id);
+    return`<div class="sk-item${sel?' sel-passive':''}" onclick="togglePassive('${p.id}')">
       <div style="font-weight:600;font-size:13px">${p.name}</div>
       <div style="font-size:11px;color:var(--muted);margin-top:3px">${p.desc}</div>
     </div>`;
   }).join('');
 
-  document.getElementById('cnt-co').textContent = G.selectedCombos.length+'/5';
-  document.getElementById('cnt-pa').textContent = G.selectedPassives.length+'/3';
+  document.getElementById('cnt-co').textContent=G.selectedCombos.length+'/5';
+  document.getElementById('cnt-pa').textContent=G.selectedPassives.length+'/3';
 }
 
-function pickSkill(type,id){ G.selectedSkills[type]=id; renderLoadout(); }
-function toggleCombo(id){
-  const i=G.selectedCombos.indexOf(id);
-  if(i>-1) G.selectedCombos.splice(i,1);
-  else if(G.selectedCombos.length<5) G.selectedCombos.push(id);
-  renderLoadout();
-}
-function togglePassive(id){
-  const i=G.selectedPassives.indexOf(id);
-  if(i>-1) G.selectedPassives.splice(i,1);
-  else if(G.selectedPassives.length<3) G.selectedPassives.push(id);
-  renderLoadout();
-}
+function pickSkill(t,id){G.selectedSkills[t]=id;renderLoadout()}
+function toggleCombo(id){const i=G.selectedCombos.indexOf(id);if(i>-1)G.selectedCombos.splice(i,1);else if(G.selectedCombos.length<5)G.selectedCombos.push(id);renderLoadout()}
+function togglePassive(id){const i=G.selectedPassives.indexOf(id);if(i>-1)G.selectedPassives.splice(i,1);else if(G.selectedPassives.length<3)G.selectedPassives.push(id);renderLoadout()}
 
 // ════════════════════════════════════════════════════════
-//  GAME START
+// RUN START
 // ════════════════════════════════════════════════════════
-function startGame() {
-  const en = ENEMIES[G.currentEnemy];
-  G.e.hp = en.hp; G.e.maxHp = en.hp;
-  document.getElementById('enemy-name-hdr').textContent = en.name;
+function startRun(){
+  // build run: 2 from tier1, 2 from tier2, 1 from tier3 (shuffled within tier)
+  const t1=shuffle([...ENEMY_BY_TIER[1]]).slice(0,2);
+  const t2=shuffle([...ENEMY_BY_TIER[2]]).slice(0,2);
+  const t3=shuffle([...ENEMY_BY_TIER[3]]).slice(0,1);
+  RUN={enemies:[...t1,...t2,...t3],idx:0,totalTurns:0,log:[]};
+  // preserve loadout selection
+  const sk=G.selectedSkills,co=G.selectedCombos,pa=G.selectedPassives;
+  initG(RUN.enemies[0]);
+  G.selectedSkills=sk;G.selectedCombos=co;G.selectedPassives=pa;
   document.getElementById('s-loadout').style.display='none';
   document.getElementById('s-fight').style.display='block';
   renderEnemyInfo();
   beginTurn();
 }
 
-function renderEnemyInfo() {
-  const en = ENEMIES[G.currentEnemy];
-  const skillStr = Object.entries(en.skills).map(([t,id])=>{
-    const sk = ENEMY_SKILLS[id]; return sk ? `${t}:${sk.name}` : '';
-  }).filter(Boolean).join('  ');
-  const passiveStr = en.passives.map(pid=>PASSIVES[pid]?.name||'').join(', ') || '—';
-  const comboStr = en.combos.map(cid=>{
-    const c=COMBOS[cid]; return c?c.name:'';
-  }).join(', ') || '—';
-  document.getElementById('einfo-content').innerHTML =
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+
+function renderEnemyInfo(){
+  const en=ENEMY_POOL[G.currentEnemyId];
+  document.getElementById('enemy-name-hdr').textContent=en.name;
+  document.getElementById('run-progress').textContent=(RUN.idx+1)+' / '+RUN.enemies.length+' enemies';
+  const skillStr=Object.entries(en.skills).map(([t,id])=>{const s=SKILL_POOL[id];return s?t+':'+s.name:''}).filter(Boolean).join('  ');
+  const passStr=en.passives.map(id=>PASSIVE_POOL[id]?.name||'').join(', ')||'—';
+  const comboStr=en.combos.map(id=>COMBO_POOL[id]?.name||'').join(', ')||'—';
+  document.getElementById('einfo-content').innerHTML=
     `<div><span style="color:var(--faint)">skills: </span>${skillStr}</div>
-     <div><span style="color:var(--faint)">passive: </span>${passiveStr}</div>
+     <div><span style="color:var(--faint)">passive: </span>${passStr}</div>
      <div><span style="color:var(--faint)">combos: </span>${comboStr}</div>`;
+  updateFightUI();
 }
 
 function toggleEInfo(){
-  const body=document.getElementById('einfo-body');
-  const lbl=document.getElementById('einfo-label');
-  const open=body.classList.toggle('open');
-  lbl.textContent=(open?'▼':'▶')+' enemy loadout';
+  const b=document.getElementById('einfo-body'),l=document.getElementById('einfo-label');
+  const o=b.classList.toggle('open');l.textContent=(o?'▼':'▶')+' enemy loadout';
 }
 
 // ════════════════════════════════════════════════════════
-//  TURN FLOW
+// TURN FLOW
 // ════════════════════════════════════════════════════════
-function beginTurn() {
-  G.turn++; G.pDice=[]; G.pRolls=0; G.eDice=[]; G.eRolls=0;
-  G.selectedType=null; G.phase='roll'; G.eRolled=false; G.currentEType=null;
-  G.resultOverride=null;
-
+function beginTurn(){
+  G.turn++;RUN.totalTurns++;
+  G.pDice=[];G.pRolls=0;G.eDice=[];G.eRolls=0;
+  G.selectedType=null;G.phase='roll';G.eRolled=false;G.currentEType=null;G.resultOverride=null;
   document.getElementById('phase-roll').style.display='block';
   document.getElementById('phase-skill').style.display='none';
   document.getElementById('p-dice').innerHTML='';
@@ -819,32 +593,26 @@ function beginTurn() {
   document.getElementById('e-sum').textContent='—';
   document.getElementById('e-spd').textContent='—';
   document.getElementById('btn-roll').disabled=false;
-  document.getElementById('roll-turn-lbl').textContent=`รอบ ${G.turn} — phase 1: โยนเต๋า`;
+  document.getElementById('roll-turn-lbl').textContent='รอบ '+G.turn+' — phase 1: โยนเต๋า';
   document.getElementById('roll-hint').textContent='';
-
-  // turnStart status effects
   triggerStatuses('turnStart');
   updateFightUI();
-  addLog(`─── รอบ ${G.turn} ───`,'info');
-  if(checkDeath()) return;
+  addLog('─── รอบ '+G.turn+' ───','info');
+  checkDeath();
 }
 
-function doRoll() {
-  if(G.phase!=='roll') return;
-  const sum = G.pDice.reduce((a,b)=>a+b,0);
-  if(sum>11){ stopRoll(); return; }
-  const v = Math.floor(Math.random()*6)+1;
-  G.pDice.push(v); G.pRolls++;
+function doRoll(){
+  if(G.phase!=='roll')return;
+  if(G.pDice.reduce((a,b)=>a+b,0)>11){stopRoll();return}
+  const v=Math.floor(Math.random()*6)+1;
+  G.pDice.push(v);G.pRolls++;
   renderPDice();
-
-  // passive pa3 lucky dice
-  let freeRoll = false;
+  // passive luckydice
   G.selectedPassives.forEach(pid=>{
-    const pa=PASSIVES[pid];
-    if(pa.onRoll && pa.onRoll(v, G.pRolls, makeCtx())) freeRoll=true;
+    const pa=PASSIVE_POOL[pid];
+    if(pa&&pa.onRoll&&pa.onRoll(v,G.pRolls,makeCtx()))
+      setTimeout(()=>{const v2=Math.floor(Math.random()*6)+1;G.pDice.push(v2);G.pRolls++;renderPDice()},350);
   });
-  if(freeRoll) setTimeout(()=>{ const v2=Math.floor(Math.random()*6)+1; G.pDice.push(v2); G.pRolls++; renderPDice(); },350);
-
   if(G.pDice.reduce((a,b)=>a+b,0)>11){
     document.getElementById('roll-hint').textContent='ผลรวมเกิน 11 — บังคับ type S!';
     document.getElementById('btn-roll').disabled=true;
@@ -852,52 +620,29 @@ function doRoll() {
   }
 }
 
-function renderDiceSummary(){
-  const pSum=G.pDice.reduce((a,b)=>a+b,0);
-  const eSum=G.eDice.reduce((a,b)=>a+b,0);
-  const pSpd=pSum+G.pRolls+(hasPa('pa4')&&G.ps.loseStreak>=2?3:0);
-  const eSpd=eSum+G.eRolls;
-  const pOnes=G.pDice.filter(d=>d===1).length;
-  const eOnes=G.eDice.filter(d=>d===1).length;
-  document.getElementById('dice-summary').innerHTML=`
-    <div style="display:flex;gap:10px">
-      <div style="flex:1">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace">YOUR DICE</div>
-        <div style="margin-bottom:4px">${G.pDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('')}</div>
-        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">
-          รวม <span style="color:var(--text)">${pSum}</span> · โยน <span style="color:var(--text)">${G.pRolls}</span>x · spd <span style="color:var(--d)">${pSpd}</span>
-          ${pOnes>0?`· <span style="color:var(--win)">[1]×${pOnes}</span>`:''}
-        </div>
-      </div>
-      <div style="width:1px;background:var(--border)"></div>
-      <div style="flex:1">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace">ENEMY DICE</div>
-        <div style="margin-bottom:4px">${G.eDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('')}</div>
-        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">
-          รวม <span style="color:var(--text)">${eSum}</span> · โยน <span style="color:var(--text)">${G.eRolls}</span>x · spd <span style="color:var(--a)">${eSpd}</span>
-          ${eOnes>0?`· <span style="color:var(--win)">[1]×${eOnes}</span>`:''}
-        </div>
-      </div>
-    </div>`;
-}
-
 function renderPDice(){
   const sum=G.pDice.reduce((a,b)=>a+b,0);
   document.getElementById('p-dice').innerHTML=G.pDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('');
   document.getElementById('p-sum').textContent=sum;
   document.getElementById('p-cnt').textContent=G.pRolls;
-  const spd=sum+G.pRolls+(hasPa('pa4')&&G.ps.loseStreak>=2?3:0);
+  const spd=sum+G.pRolls+spdBonus();
   document.getElementById('p-spd').textContent=spd;
 }
 
-function hasPa(id){ return G.selectedPassives.includes(id); }
+function spdBonus(){
+  let b=0;
+  G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.speedBonus)b+=pa.speedBonus(G)});
+  return b;
+}
+
+function hasPa(id){return G.selectedPassives.includes(id)}
 
 function enemyRoll(){
   const cnt=Math.floor(Math.random()*3)+1;
   for(let i=0;i<cnt;i++){
     const v=Math.floor(Math.random()*6)+1;
-    G.eDice.push(v); G.eRolls++;
-    if(G.eDice.reduce((a,b)=>a+b,0)>=10) break;
+    G.eDice.push(v);G.eRolls++;
+    if(G.eDice.reduce((a,b)=>a+b,0)>=10)break;
   }
   const eSum=G.eDice.reduce((a,b)=>a+b,0);
   document.getElementById('e-dice').innerHTML=G.eDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('');
@@ -906,318 +651,345 @@ function enemyRoll(){
 }
 
 function stopRoll(){
-  if(G.pDice.length===0){ document.getElementById('roll-hint').textContent='โยนเต๋าอย่างน้อย 1 ครั้งก่อนนะ!'; return; }
+  if(G.pDice.length===0){document.getElementById('roll-hint').textContent='โยนเต๋าอย่างน้อย 1 ครั้ง!';return}
   G.phase='skill';
-  if(!G.eRolled){ enemyRoll(); G.eRolled=true; }
-  const en=ENEMIES[G.currentEnemy];
-  const locked=G.e.buffs.lockedType||null;
-  G.currentEType=en.aiPick(locked);
-
+  if(!G.eRolled){enemyRoll();G.eRolled=true}
+  const en=ENEMY_POOL[G.currentEnemyId];
+  G.currentEType=en.aiPick(G.e.buffs.lockedType||null,G.chain);
   // auto-select S if forced
-  const pSum=G.pDice.reduce((a,b)=>a+b,0);
-  if(pSum>11){ G.selectedType='S'; }
-
+  if(G.pDice.reduce((a,b)=>a+b,0)>11)G.selectedType='S';
   document.getElementById('phase-roll').style.display='none';
   document.getElementById('phase-skill').style.display='block';
-
-  // show dice summary in phase-skill
   renderDiceSummary();
   renderTypeButtons();
 }
 
+function renderDiceSummary(){
+  const pSum=G.pDice.reduce((a,b)=>a+b,0),eSum=G.eDice.reduce((a,b)=>a+b,0);
+  const pSpd=pSum+G.pRolls+spdBonus(),eSpd=eSum+G.eRolls;
+  const pOnes=G.pDice.filter(d=>d===1).length,eOnes=G.eDice.filter(d=>d===1).length;
+  document.getElementById('dice-summary').innerHTML=`
+    <div style="display:flex;gap:10px">
+      <div style="flex:1">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace">YOUR DICE</div>
+        <div style="margin-bottom:4px">${G.pDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('')}</div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">รวม <span style="color:var(--text)">${pSum}</span> · โยน <span style="color:var(--text)">${G.pRolls}</span>x · spd <span style="color:var(--d)">${pSpd}</span>${pOnes>0?` · <span style="color:var(--win)">[1]×${pOnes}</span>`:''}</div>
+      </div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div style="flex:1">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace">ENEMY DICE</div>
+        <div style="margin-bottom:4px">${G.eDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('')}</div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">รวม <span style="color:var(--text)">${eSum}</span> · โยน <span style="color:var(--text)">${G.eRolls}</span>x · spd <span style="color:var(--a)">${eSpd}</span>${eOnes>0?` · <span style="color:var(--win)">[1]×${eOnes}</span>`:''}</div>
+      </div>
+    </div>`;
+}
+
 function renderTypeButtons(){
-  const pSum=G.pDice.reduce((a,b)=>a+b,0);
-  const forced=pSum>11;
-  const locked=G.p.buffs.lockedType||null;
+  const pSum=G.pDice.reduce((a,b)=>a+b,0),forced=pSum>11,locked=G.p.buffs.lockedType||null;
   document.getElementById('type-btns').innerHTML=['A','B','C','D','S'].map(t=>{
-    let cls=`btn-type type-${t.toLowerCase()}`;
-    if(forced&&t!=='S') cls+=' forced';
-    else if(locked===t) cls+=' locked';
-    else if(G.selectedType===t) cls+=' sel';
-    const sk=SKILLS[G.selectedSkills[t]];
-    return `<button class="${cls}"
-      onmouseenter="showHint('${t}')"
-      onmouseleave="clearHint()"
-      onclick="pickType('${t}')">
-      <span>${t}</span>
-      <span class="sub">${sk?sk.name:''}</span>
+    let cls='btn-type type-'+t.toLowerCase();
+    if(forced&&t!=='S')cls+=' forced';
+    else if(locked===t)cls+=' locked';
+    else if(G.selectedType===t)cls+=' sel';
+    const sk=SKILL_POOL[G.selectedSkills[t]];
+    return`<button class="${cls}" onmouseenter="showHint('${t}')" onmouseleave="clearHint()" onclick="pickType('${t}')">
+      <span>${t}</span><span class="sub">${sk?sk.name:''}</span>
     </button>`;
   }).join('');
 }
 
-function showHint(t){
-  const sk=SKILLS[G.selectedSkills[t]];
-  document.getElementById('skill-hover').innerHTML=sk?`<b>${sk.name}</b>\n${sk.desc}`:'';
-}
-function clearHint(){
-  const t=G.selectedType;
-  if(t){ const sk=SKILLS[G.selectedSkills[t]]; document.getElementById('skill-hover').innerHTML=`<b>${sk?.name}</b> selected`; }
-  else document.getElementById('skill-hover').textContent='hover เพื่อดูรายละเอียด skill';
-}
+function showHint(t){const sk=SKILL_POOL[G.selectedSkills[t]];document.getElementById('skill-hover').innerHTML=sk?`<b>${sk.name}</b>\n${sk.desc}`:''}
+function clearHint(){const t=G.selectedType;if(t){const sk=SKILL_POOL[G.selectedSkills[t]];document.getElementById('skill-hover').innerHTML=`<b>${sk?.name}</b> selected`}else document.getElementById('skill-hover').textContent='hover เพื่อดูรายละเอียด skill'}
 
 function pickType(t){
-  const sum=G.pDice.reduce((a,b)=>a+b,0);
-  const forced=sum>11;
-  if(forced && t!=='S') return;  // only S allowed when forced
-  if(G.p.buffs.lockedType===t){ addLog(`type ${t} ถูก debuff ใช้ไม่ได้!`,'l'); return; }
-  G.selectedType=t; renderTypeButtons();
-  const sk=SKILLS[G.selectedSkills[t]];
+  const forced=G.pDice.reduce((a,b)=>a+b,0)>11;
+  if(forced&&t!=='S')return;
+  if(G.p.buffs.lockedType===t){addLog('type '+t+' ถูก debuff ใช้ไม่ได้!','l');return}
+  G.selectedType=t;renderTypeButtons();
+  const sk=SKILL_POOL[G.selectedSkills[t]];
   document.getElementById('skill-hover').innerHTML=sk?`<b>${sk.name}</b> selected\n${sk.desc}`:'';
 }
 
 // ════════════════════════════════════════════════════════
-//  CLASH
+// CLASH ENGINE
 // ════════════════════════════════════════════════════════
 function doClash(){
-  if(!G.selectedType){ addLog('เลือก type ก่อน!','info'); return; }
+  if(!G.selectedType){addLog('เลือก type ก่อน!','info');return}
 
-  const pType=G.selectedType;
-  const eType=G.currentEType;
-  const pSkill=SKILLS[G.selectedSkills[pType]];
-  const en=ENEMIES[G.currentEnemy];
-  const eSkill=ENEMY_SKILLS[en.skills[eType]]||ENEMY_SKILLS['es'];
+  const pType=G.selectedType, eType=G.currentEType;
+  const en=ENEMY_POOL[G.currentEnemyId];
+  const pSkill=SKILL_POOL[G.selectedSkills[pType]];
+  const eSkill=SKILL_POOL[en.skills[eType]]||SKILL_POOL['nothing'];
+
   const pSum=G.pDice.reduce((a,b)=>a+b,0);
   const eSum=G.eDice.reduce((a,b)=>a+b,0);
-  const pSpdBonus=hasPa('pa4')&&G.ps.loseStreak>=2?3:0;
-  const pSpd=pSum+G.pRolls+pSpdBonus;
-  const eSpd=eSum+G.eRolls;
 
-  // onClashReveal: status effects with this trigger
+  // skill context — always from user's perspective: my=self, opp=opponent
+  const pSC={myDice:G.pDice,oppDice:G.eDice,myRolls:G.pRolls,oppRolls:G.eRolls,mySum:pSum,oppSum:eSum};
+  const eSC={myDice:G.eDice,oppDice:G.pDice,myRolls:G.eRolls,oppRolls:G.pRolls,mySum:eSum,oppSum:pSum};
+
+  // onClashReveal: mustwin status
   triggerStatuses('onClashReveal');
 
   let raw=getClashRaw(pType,eType);
   let pR=raw[0], eR=raw[1];
+  if(G.resultOverride){pR=G.resultOverride.p;eR=G.resultOverride.e;G.resultOverride=null}
 
-  // apply override (mustwin etc.)
-  if(G.resultOverride){ pR=G.resultOverride.p; eR=G.resultOverride.e; G.resultOverride=null; }
+  addLog(pSkill.name+'('+pType+') vs '+eSkill.name+'('+eType+') → P:'+pR+' E:'+eR,'info');
 
-  addLog(`${pSkill.name}(${pType}) vs ${eSkill.name}(${eType})  P:${pR} E:${eR}`,'info');
+  // get effects from both skills
+  const pEff = resolveSkillEff(pSkill, pR, pSC);
+  const eEff = resolveSkillEff(eSkill, eR, eSC);
+
+  // passive: momentum dmg bonus for player
+  let momBonus=0;
+  G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.dmgBonus)momBonus+=pa.dmgBonus(G)});
+  if(momBonus>0 && pEff.dmgOpp>0) pEff.dmgOpp+=momBonus;
 
   // speed order
+  const pSpd=pSum+G.pRolls+spdBonus();
+  const eSpd=eSum+G.eRolls;
   let pFirst=pSpd>eSpd;
-  if(pSpd===eSpd){ pFirst=G.p.hp>=G.e.hp; if(G.p.hp===G.e.hp) pFirst=Math.random()>.5; }
+  if(pSpd===eSpd){pFirst=G.p.hp>=G.e.hp;if(G.p.hp===G.e.hp)pFirst=Math.random()>.5}
 
-  const ctx=makeCtx();
+  addLog('speed: P='+pSpd+' E='+eSpd+' → '+(pFirst?'player':'enemy')+' goes first','info');
 
+  // apply effects in speed order, check death after each
   if(pFirst){
-    triggerPlayerSkill(pSkill,pR,ctx);
-    if(!isDead()) triggerEnemySkill(eSkill,eR,ctx);
+    applyEffect(pEff, G.p, G.e, 'player', pR); if(checkDeath())return;
+    applyEffect(eEff, G.e, G.p, 'enemy',  eR); if(checkDeath())return;
   } else {
-    triggerEnemySkill(eSkill,eR,ctx);
-    if(!isDead()) triggerPlayerSkill(pSkill,pR,ctx);
+    applyEffect(eEff, G.e, G.p, 'enemy',  eR); if(checkDeath())return;
+    applyEffect(pEff, G.p, G.e, 'player', pR); if(checkDeath())return;
   }
 
-  // chain & combo
-  G.chain.push({type:pType, result:pR});
-  if(G.chain.length>10) G.chain.shift();
+  // afterClash passives (player)
+  const dummyCtx=makeDummyCtx();
+  G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.afterClash)pa.afterClash(pR,dummyCtx,'player')});
+  if(checkDeath())return;
 
-  // afterClash passives
-  G.selectedPassives.forEach(pid=>{ const pa=PASSIVES[pid]; if(pa.afterClash) pa.afterClash(pR,ctx); });
+  // chain + combos
+  G.chain.push({type:pType,result:pR});
+  if(G.chain.length>10)G.chain.shift();
+  checkCombos(); if(checkDeath())return;
 
-  checkCombos(ctx);
-
-  // turnEnd status effects
-  triggerStatuses('turnEnd');
+  // turnEnd statuses
+  triggerStatuses('turnEnd'); if(checkDeath())return;
 
   // cleanup
   G.ps.lastResult=pR;
-  G.ps.loseStreak = pR==='L' ? G.ps.loseStreak+1 : 0;
+  G.ps.loseStreak=pR==='L'?G.ps.loseStreak+1:0;
   delete G.p.buffs.lockedType;
   delete G.e.buffs.lockedType;
   cleanStatuses();
 
   updateFightUI();
-  if(!checkDeath()) setTimeout(beginTurn,350);
+  setTimeout(beginTurn,350);
 }
 
-// ── CTX object passed to skill effects ──────────────────
-function makeCtx(){
-  const pSum=G.pDice.reduce((a,b)=>a+b,0);
-  const eSum=G.eDice.reduce((a,b)=>a+b,0);
-  return {
-    G, pDice:G.pDice, eDice:G.eDice,
-    pRolls:G.pRolls, eRolls:G.eRolls,
-    pSum, eSum,
-    deal(target, amount){
-      let dmg=amount;
-      if(target==='player' && hasPa('pa2') && G.p.hp<G.p.maxHp/2) dmg=Math.max(0,dmg-1);
-      if(target==='player') G.p.hp=Math.max(0,G.p.hp-dmg);
-      else G.e.hp=Math.max(0,G.e.hp-dmg);
+// get the right skill callback result
+function resolveSkillEff(skill, result, sc){
+  if(result==='W') return skill.onWin(sc);
+  if(result==='P') return skill.onParry(sc);
+  return skill.onLose(sc);
+}
+
+// apply a skill effect object — my=entity that used skill, opp=the other
+function applyEffect(eff, my, opp, side, result){
+  // dmgOpp
+  if(eff.dmgOpp>0){
+    let dmg=eff.dmgOpp;
+    // iron skin for player when taking dmg
+    if(opp===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(true,G))});
+    opp.hp=Math.max(0,opp.hp-dmg);
+    addLog((side==='player'?'P→E':'E→P')+' dmg '+dmg, side==='player'?'w':'l');
+    // thorns: if player takes dmg, reflect 1
+    if(opp===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.onTakeDmg){G.e.hp=Math.max(0,G.e.hp-1);addLog('thorns: reflect 1','info')}});
+  }
+  // dmgSelf
+  if(eff.dmgSelf>0){
+    let dmg=eff.dmgSelf;
+    if(my===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(true,G))});
+    my.hp=Math.max(0,my.hp-dmg);
+    addLog((side==='player'?'P self':'E self')+' dmg '+dmg,'l');
+  }
+  // healSelf
+  if(eff.healSelf>0){my.hp=Math.min(my.maxHp,my.hp+eff.healSelf);addLog((side==='player'?'P':'E')+' heal '+eff.healSelf,'w')}
+  // healOpp
+  if(eff.healOpp>0){opp.hp=Math.min(opp.maxHp,opp.hp+eff.healOpp);addLog((side==='player'?'P→E':'E→P')+' heal '+eff.healOpp,'w')}
+  // debuffOpp
+  if(eff.debuffOpp){Object.entries(eff.debuffOpp).forEach(([k,v])=>{opp.buffs[k]=v;addLog('debuff opp: '+k+'='+v,'info')})}
+  // statusSelf
+  if(eff.statusSelf){addStatusTo(my,eff.statusSelf);addLog('status self: '+eff.statusSelf.id,'info')}
+  // statusOpp
+  if(eff.statusOpp){addStatusTo(opp,eff.statusOpp);addLog('status opp: '+eff.statusOpp.id,'info')}
+  // log
+  if(eff.log) addLog(eff.log, result==='W'?'w':result==='L'?'l':'p');
+  updateFightUI();
+}
+
+function addStatusTo(entity,s){
+  const ex=entity.statuses.find(x=>x.id===s.id);
+  if(ex){ex.potency+=s.potency;ex.count+=s.count}else entity.statuses.push({...s});
+}
+
+// dummy ctx for passives that still need ctx.deal / ctx.log
+function makeDummyCtx(){
+  return{
+    G,
+    deal(target,amount){
+      if(target==='enemy'){G.e.hp=Math.max(0,G.e.hp-amount)}
+      else{G.p.hp=Math.max(0,G.p.hp-amount)}
     },
-    dealEntity(entity, amount){
-      const isP = entity===G.p;
-      let dmg=amount;
-      if(isP && hasPa('pa2') && G.p.hp<G.p.maxHp/2) dmg=Math.max(0,dmg-1);
-      entity.hp=Math.max(0,entity.hp-dmg);
+    heal(target,amount){
+      if(target==='player')G.p.hp=Math.min(G.p.maxHp,G.p.hp+amount);
+      else G.e.hp=Math.min(G.e.maxHp,G.e.hp+amount);
     },
-    heal(target, amount){
-      if(target==='player') G.p.hp=Math.min(G.p.maxHp, G.p.hp+amount);
-      else G.e.hp=Math.min(G.e.maxHp, G.e.hp+amount);
-    },
-    healEntity(entity, amount){ entity.hp=Math.min(entity.maxHp, entity.hp+amount); },
-    addStatus(target, sid, potency, count){
-      const entity=target==='player'?G.p:G.e;
-      const existing=entity.statuses.find(s=>s.id===sid);
-      if(existing){ existing.potency+=potency; existing.count+=count; }
-      else entity.statuses.push({id:sid, potency, count});
-    },
-    addBuff(target, key, value){
-      const entity=target==='player'?G.p:G.e;
-      entity.buffs[key]=value;
-    },
-    overrideResult(p,e){ G.resultOverride={p,e}; },
-    log: addLog,
+    log:addLog,
   };
 }
 
-function triggerPlayerSkill(skill, res, ctx){
-  const mo=hasPa('pa5')&&G.ps.lastResult==='W'?2:0;
-  const origDeal=ctx.deal.bind(ctx);
-  if(mo>0) ctx.deal=(t,a)=>origDeal(t, t==='enemy'?a+mo:a);
-  if(res==='W') skill.onWin(ctx);
-  else if(res==='P') skill.onParry(ctx);
-  else skill.onLose(ctx);
-  ctx.deal=origDeal; // restore
-}
-
-function triggerEnemySkill(eSkill, eRes, ctx){
-  if(eRes==='W'){
-    if(eSkill.type==='A'||eSkill.type==='B'){
-      const d=eSkill.type==='A'?rnd(3,7):rnd(4,8);
-      ctx.deal('player',d); addLog(`enemy ${eSkill.name}: dmg ${d}`,'l');
-    } else if(eSkill.type==='C'){ ctx.heal('enemy',4); addLog('enemy guard: heal 4','l'); }
-    else if(eSkill.type==='D'){ ctx.heal('enemy',5); addLog('enemy regen: heal 5','l'); }
-  }
-}
-
-function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
-
-// ── Status trigger ──────────────────────────────────────
+// ── Status effects ───────────────────────────────────────
 function triggerStatuses(timing){
-  const ctx=makeCtx();
-  // sort by priority
-  const allStatuses=[
-    ...G.p.statuses.map(s=>({entity:G.p, status:s})),
-    ...G.e.statuses.map(s=>({entity:G.e, status:s})),
-  ].sort((a,b)=>{
-    const pa=STATUS_EFFECTS[a.status.id]?.priority||99;
-    const pb=STATUS_EFFECTS[b.status.id]?.priority||99;
-    return pa-pb;
-  });
-
-  for(const {entity,status} of allStatuses){
-    const def=STATUS_EFFECTS[status.id];
-    if(!def||def.trigger!==timing) continue;
-    def.effect(entity, status, ctx);
+  const ctx=makeDummyCtx();
+  ctx.dealEntity=(entity,amount)=>{entity.hp=Math.max(0,entity.hp-amount)};
+  ctx.healEntity=(entity,amount)=>{entity.hp=Math.min(entity.maxHp,entity.hp+amount)};
+  ctx.overrideResult=(p,e)=>{G.resultOverride={p,e}};
+  const all=[...G.p.statuses.map(s=>({entity:G.p,s})),...G.e.statuses.map(s=>({entity:G.e,s}))]
+    .sort((a,b)=>(STATUS_POOL[a.s.id]?.priority||99)-(STATUS_POOL[b.s.id]?.priority||99));
+  for(const {entity,s} of all){
+    const def=STATUS_POOL[s.id];
+    if(!def||def.trigger!==timing)continue;
+    def.effect(entity,s,ctx);
     updateFightUI();
-    if(checkDeath()) return;
+    if(checkDeath())return;
   }
 }
+function cleanStatuses(){G.p.statuses=G.p.statuses.filter(s=>s.count>0);G.e.statuses=G.e.statuses.filter(s=>s.count>0)}
 
-function cleanStatuses(){
-  G.p.statuses=G.p.statuses.filter(s=>s.count>0);
-  G.e.statuses=G.e.statuses.filter(s=>s.count>0);
-}
-
-// ── Combo check ─────────────────────────────────────────
-function checkCombos(ctx){
+// ── Combo check ──────────────────────────────────────────
+function checkCombos(){
+  const ctx=makeDummyCtx();
   for(const cid of G.selectedCombos){
-    const c=COMBOS[cid]; if(!c) continue;
-    if(G.chain.length < c.pattern.length) continue;
+    const c=COMBO_POOL[cid];if(!c)continue;
+    if(G.chain.length<c.pattern.length)continue;
     const tail=G.chain.slice(-c.pattern.length);
     const match=c.pattern.every((step,i)=>{
       const t=tail[i];
-      const typeOk = step.type==='*' || t.type===step.type;
-      const resOk  = step.result==='*' || t.result===step.result;
-      return typeOk && resOk;
+      return(step.type==='*'||t.type===step.type)&&(step.result==='*'||t.result===step.result);
     });
-    if(match) c.effect(ctx);
+    if(match)c.effect(ctx);
   }
   renderChain();
 }
 
-// ── Chain render ────────────────────────────────────────
 function renderChain(){
-  document.getElementById('chain-disp').innerHTML =
-    G.chain.slice(-8).map(c=>`<span class="chip ${c.type.toLowerCase()}">${c.type}${c.result}</span>`).join('');
-
-  document.getElementById('combo-prog').innerHTML = G.selectedCombos.map(cid=>{
-    const c=COMBOS[cid]; if(!c) return '';
+  document.getElementById('chain-disp').innerHTML=G.chain.slice(-8).map(c=>`<span class="chip ${c.type.toLowerCase()}">${c.type}${c.result}</span>`).join('');
+  document.getElementById('combo-prog').innerHTML=G.selectedCombos.map(cid=>{
+    const c=COMBO_POOL[cid];if(!c)return'';
     const tail=G.chain.slice(-c.pattern.length);
-    const matched = c.pattern.length>0 && c.pattern.every((step,i)=>{
-      const t=tail[i]; if(!t) return false;
-      return (step.type==='*'||t.type===step.type)&&(step.result==='*'||t.result===step.result);
-    });
-    const patHtml=c.pattern.map(s=>`<span class="chip${matched?' match':''} ${s.type==='*'?'':s.type.toLowerCase()}">${s.type}${s.result}</span>`).join('');
-    return `<span style="margin-right:10px">${c.name}: ${patHtml} → ${c.desc.split('→')[1]||''}</span>`;
+    const matched=c.pattern.length>0&&c.pattern.every((step,i)=>{const t=tail[i];return t&&(step.type==='*'||t.type===step.type)&&(step.result==='*'||t.result===step.result)});
+    return`<span style="margin-right:10px">${c.name}: ${c.pattern.map(s=>`<span class="chip${matched?' match':''} ${s.type==='*'?'':s.type.toLowerCase()}">${s.type}${s.result}</span>`).join('')}→${c.desc.split('→').pop()}</span>`;
   }).join('');
 }
 
-// ════════════════════════════════════════════════════════
-//  UI UPDATES
-// ════════════════════════════════════════════════════════
+// ── UI ───────────────────────────────────────────────────
 function updateFightUI(){
-  const p=G.p, e=G.e;
-  document.getElementById('p-hp-t').textContent=`${Math.max(0,Math.round(p.hp))}/${p.maxHp}`;
-  document.getElementById('e-hp-t').textContent=`${Math.max(0,Math.round(e.hp))}/${e.maxHp}`;
+  const p=G.p,e=G.e;
+  document.getElementById('p-hp-t').textContent=Math.max(0,Math.round(p.hp))+'/'+p.maxHp;
+  document.getElementById('e-hp-t').textContent=Math.max(0,Math.round(e.hp))+'/'+e.maxHp;
   document.getElementById('p-hp-b').style.width=Math.max(0,p.hp/p.maxHp*100)+'%';
   document.getElementById('e-hp-b').style.width=Math.max(0,e.hp/e.maxHp*100)+'%';
-
-  function renderEntityStatus(entity){
-    const tags=[];
-    Object.entries(entity.buffs).forEach(([k,v])=>{
-      if(k==='lockedType') tags.push(`<span class="stag stag-debuff">no ${v}</span>`);
-      else if(k==='forceW') tags.push(`<span class="stag stag-buff">mustwin</span>`);
-      else tags.push(`<span class="stag stag-buff">${k}</span>`);
-    });
-    entity.statuses.forEach(s=>{
-      const def=STATUS_EFFECTS[s.id];
-      const isHeal=['regen','mustwin'].includes(s.id);
-      tags.push(`<span class="stag ${isHeal?'stag-buff':'stag-debuff'}">${def?def.name:s.id} ${s.potency}p ${s.count}c</span>`);
-    });
-    return tags.join('');
+  function renderStat(entity){
+    return[
+      ...Object.entries(entity.buffs).map(([k,v])=>k==='lockedType'?`<span class="stag stag-debuff">no ${v}</span>`:`<span class="stag stag-buff">${k}</span>`),
+      ...entity.statuses.map(s=>{const def=STATUS_POOL[s.id];const isHeal=['regen','mustwin'].includes(s.id);return`<span class="stag ${isHeal?'stag-buff':'stag-debuff'}">${def?def.name:s.id} ${s.potency}p ${s.count}c</span>`})
+    ].join('');
   }
-  document.getElementById('p-status').innerHTML=renderEntityStatus(p);
-  document.getElementById('e-status').innerHTML=renderEntityStatus(e);
+  document.getElementById('p-status').innerHTML=renderStat(p);
+  document.getElementById('e-status').innerHTML=renderStat(e);
 }
 
-function addLog(msg, type){
-  const el=document.getElementById('blog'); if(!el) return;
-  const d=document.createElement('div');
-  d.className='log-e '+(type||'info');
-  d.textContent=msg; el.prepend(d);
-  while(el.children.length>60) el.removeChild(el.lastChild);
+function addLog(msg,type){
+  const el=document.getElementById('blog');if(!el)return;
+  const d=document.createElement('div');d.className='log-e '+(type||'info');d.textContent=msg;el.prepend(d);
+  while(el.children.length>60)el.removeChild(el.lastChild);
 }
 
-function isDead(){ return G.p.hp<=0||G.e.hp<=0; }
+function isDead(){return G.p.hp<=0||G.e.hp<=0}
 
 function checkDeath(){
-  if(G.e.hp<=0){ showEnd(true); return true; }
-  if(G.p.hp<=0){ showEnd(false); return true; }
+  if(G.e.hp<=0){onEnemyDead();return true}
+  if(G.p.hp<=0){onPlayerDead();return true}
   return false;
+}
+
+function onEnemyDead(){
+  RUN.log.push({enemy:G.currentEnemyId,turns:G.turn,survived:true});
+  RUN.idx++;
+  if(RUN.idx>=RUN.enemies.length){
+    // clear all enemies — win!
+    showEnd(true);
+  } else {
+    // show victory screen between fights
+    document.getElementById('s-fight').style.display='none';
+    document.getElementById('s-victory').style.display='block';
+    const en=ENEMY_POOL[G.currentEnemyId];
+    document.getElementById('vic-title').textContent=en.name+' ถูกกำจัด!';
+    document.getElementById('vic-sub').textContent=
+      'ผ่านมา '+RUN.idx+'/'+RUN.enemies.length+' ศัตรู | HP เหลือ '+Math.round(G.p.hp)+'/'+G.p.maxHp+
+      ' | ศัตรูถัดไป: '+ENEMY_POOL[RUN.enemies[RUN.idx]].name;
+  }
+}
+
+function onPlayerDead(){
+  RUN.log.push({enemy:G.currentEnemyId,turns:G.turn,survived:false});
+  showEnd(false);
+}
+
+function nextEnemy(){
+  document.getElementById('s-victory').style.display='none';
+  document.getElementById('s-fight').style.display='block';
+  const nextId=RUN.enemies[RUN.idx];
+  const pHp=G.p.hp;
+  const sk=G.selectedSkills,co=G.selectedCombos,pa=G.selectedPassives;
+  initG(nextId);
+  G.p.hp=pHp; // carry over player HP
+  G.selectedSkills=sk;G.selectedCombos=co;G.selectedPassives=pa;
+  document.getElementById('blog').innerHTML='';
+  document.getElementById('chain-disp').innerHTML='';
+  document.getElementById('combo-prog').innerHTML='';
+  document.getElementById('einfo-body').classList.remove('open');
+  document.getElementById('einfo-label').textContent='▶ enemy loadout';
+  renderEnemyInfo();
+  beginTurn();
 }
 
 function showEnd(win){
   document.getElementById('s-fight').style.display='none';
+  document.getElementById('s-victory').style.display='none';
   document.getElementById('s-end').style.display='block';
   document.getElementById('end-icon').textContent=win?'★':'✕';
-  document.getElementById('end-title').textContent=win?'ชนะ!':'แพ้...';
-  document.getElementById('end-sub').textContent=win?`เอาชนะ ${ENEMIES[G.currentEnemy].name} ใน ${G.turn} รอบ`:'ลองใหม่อีกครั้ง';
+  document.getElementById('end-title').textContent=win?'RUN CLEAR!':'GAME OVER';
+  document.getElementById('end-sub').textContent=win?'ผ่านศัตรูทุกตัวแล้ว!':'ล้มลงในการต่อสู้';
+  const summary=RUN.log.map((l,i)=>{
+    const en=ENEMY_POOL[l.enemy];
+    return`<div class="run-stat">${i+1}. ${en.name} <span style="color:${l.survived?'var(--win)':'var(--lose)'}">${l.survived?'✓':'✕'}</span> ${l.turns}T</div>`;
+  }).join('');
+  document.getElementById('end-summary').innerHTML=
+    summary+`<div style="margin-top:10px;font-size:12px;color:var(--muted)">รวม ${RUN.totalTurns} รอบ | ศัตรูผ่าน ${RUN.log.filter(l=>l.survived).length}/${RUN.enemies.length}</div>`;
 }
 
 function resetAll(){
-  document.getElementById('s-end').style.display='none';
+  ['s-end','s-fight','s-victory'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('blog').innerHTML='';
-  document.getElementById('chain-disp').innerHTML='';
-  document.getElementById('combo-prog').innerHTML='';
-  initG(); renderLoadout();
+  G={selectedSkills:{A:'slash',B:'dash',C:'block',D:'heal',S:'nothing'},selectedCombos:['doublestrike','riposte','luckystrike'],selectedPassives:['battlerage']};
+  renderLoadout();
   document.getElementById('s-loadout').style.display='block';
 }
 
-// ════════════════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════════════════
-initG();
+// ── INIT ─────────────────────────────────────────────────
+G={selectedSkills:{A:'slash',B:'dash',C:'block',D:'heal',S:'nothing'},selectedCombos:['doublestrike','riposte','luckystrike'],selectedPassives:['battlerage']};
 renderLoadout();
 </script>
 </body>
