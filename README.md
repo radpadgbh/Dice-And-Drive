@@ -1,15 +1,15 @@
 Game Demo
 
 ## How to play
-1. เลือก skill (A/B/C/D)
-2. ระบบจะ resolve อัตโนมัติ
+1. roll ไม่ให้เกิน 11
+2. เลือก skill (A/B/C/D/S) roll เกิน ๅๅ บังคับ S
 3. Win/Lose/Parry มีผลต่างกัน
 
-## Core Rules (สั้น ๆ)
+## Core Rules
 - A ชนะ B
 - B ชนะ C
 - C ชนะ A
-- A ชนะ → lock B
-- B ชนะ → lock C
+- D
+- S ชนะ 
 - D แพ้ → รอบหน้าชนะ
 
