@@ -429,16 +429,17 @@ const PASSIVE_POOL = {
     desc:'ชนะ clash → rage+1 (สะสมต่อ entity), ครบ 3 → dmg 5 ทันที',
     afterClash(result, ctx, myEntity, oppEntity){
       if(result!=='W') return;
-      // เพิ่ม rage status แทน _rage
       const existing = myEntity.statuses.find(s=>s.id==='rage');
       if(existing) existing.potency++;
-      else myEntity.statuses.push({id:'rage', potency:1, count:99});
-      ctx.log('battle rage: '+( myEntity.statuses.find(s=>s.id==='rage')?.potency||0)+'/3','info');
+      else myEntity.statuses.push({id:'rage', potency:1, count:1});
       const s = myEntity.statuses.find(x=>x.id==='rage');
-      if(s && s.potency>=3){
+      ctx.log('battle rage: '+s.potency+'/3','info');
+      if(s.potency>=3){
         oppEntity.hp=Math.max(0,oppEntity.hp-5);
-        s.potency=0; // reset
+        s.potency=0;
         ctx.log('battle rage: trigger! dmg 5','combo');
+        updateFightUI();  // ← เพิ่ม
+        checkDeath();     // ← เพิ่ม
   }
 }},
 
