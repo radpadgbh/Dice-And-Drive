@@ -547,7 +547,7 @@ const STATUS_POOL = {
 
   // locktype — debuff ห้ามใช้ type ที่ระบุ 1 รอบ
   // potency ไม่ได้ใช้, ใช้ field 'lockedType' ใน status object แทน
-  locktype:{id:'locktype',name:'lock',priority:99,trigger:'turnEnd',color:'debuff',
+  locktype:{id:'locktype',name:'lock',priority:99,trigger:'onClashReveal',color:'debuff',
     desc:'turnEnd: count-1 (ห้ามใช้ type ที่ระบุใน .lockedType)',
     effect(entity,s,ctx){ s.count--; }},
 
