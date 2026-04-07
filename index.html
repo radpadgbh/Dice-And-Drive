@@ -116,8 +116,8 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .sk-badge-s{border-color:var(--s-mid);background:var(--s-pale);color:var(--s)}.sk-badge-s.sel{background:var(--s);color:#1a1508;border-color:var(--s)}
 .sk-badge-gray{border-color:var(--border2);background:var(--bg3);color:var(--muted)}.sk-badge-gray.sel{border-color:rgba(255,255,255,0.3);background:var(--bg2);color:var(--text)}
 /* tooltip on hover */
-.sk-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:11px;font-family:'Outfit',sans-serif;font-weight:400;color:var(--muted);white-space:pre-line;line-height:1.5;min-width:180px;max-width:240px;z-index:100;pointer-events:none;text-align:left}
-.sk-badge:hover .sk-tooltip{display:block}
+/* tooltip rendered via JS for dynamic positioning */
+#sk-tooltip-global{display:none;position:fixed;background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:11px;font-family:'Outfit',sans-serif;color:var(--muted);white-space:pre-line;line-height:1.5;max-width:220px;z-index:9999;pointer-events:none}
 /* combat loadout 2-col */
 .combat-lo{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
 .combat-lo-col{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px}
@@ -174,10 +174,16 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     </div>
   </div>
 
-  <div class="card" style="margin-bottom:10px">
-    <div class="einfo-toggle" onclick="toggleEInfo()"><span id="einfo-label">▶ enemy loadout</span></div>
-    <div class="einfo-body" id="einfo-body">
-      <div style="margin-top:8px;font-size:11px;color:var(--muted);line-height:1.8" id="einfo-content"></div>
+  <div class="card" id="combat-loadout-card" style="margin-bottom:10px">
+    <div class="combat-lo">
+      <div class="combat-lo-col">
+        <div class="combat-lo-lbl">player</div>
+        <div id="combat-lo-player"></div>
+      </div>
+      <div class="combat-lo-col">
+        <div class="combat-lo-lbl" id="combat-lo-enemy-lbl">enemy</div>
+        <div id="combat-lo-enemy"></div>
+      </div>
     </div>
   </div>
 
@@ -232,20 +238,6 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     <div style="margin-top:8px">
       <div class="chain-col-lbl">combo progress</div>
       <div id="combo-prog" style="font-size:10px;line-height:2"></div>
-    </div>
-  </div>
-
-  <div class="card" id="combat-loadout-card">
-    <div class="combat-lo-lbl" style="margin-bottom:6px">loadout</div>
-    <div class="combat-lo">
-      <div class="combat-lo-col">
-        <div class="combat-lo-lbl">player</div>
-        <div id="combat-lo-player"></div>
-      </div>
-      <div class="combat-lo-col">
-        <div class="combat-lo-lbl" id="combat-lo-enemy-lbl">enemy</div>
-        <div id="combat-lo-enemy"></div>
-      </div>
     </div>
   </div>
 
@@ -744,22 +736,24 @@ function renderLoadout(){
   const tnames={A:'aggressive',B:'dirty tricks',C:'martial art',D:'arcane',S:'shout / koan'};
   const selSkills=G.selectedSkills;
 
-  // skill list: type ละ ~5 สกิล ใน scroll box, badge style
+  // skill list: type ละ ~5 สกิล badge แนวนอน, tooltip via JS
   document.getElementById('skill-list').innerHTML=types.map(t=>{
     const skills=Object.values(SKILL_POOL).filter(s=>s.type===t);
     const selName=selSkills[t]?SKILL_POOL[selSkills[t]]?.name:'—';
-    return`<div style="margin-bottom:8px">
+    return`<div style="margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
         <span class="tbadge tbadge-${t.toLowerCase()}">${t}</span>
         <span style="font-size:12px;color:var(--muted);flex:1">${tnames[t]}</span>
         <span style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">✓ ${selName}</span>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;max-height:96px;overflow-y:auto;padding-bottom:2px">
-        ${skills.map(s=>`<button class="sk-badge sk-badge-${t.toLowerCase()}${selSkills[t]===s.id?' sel':''}" onclick="pickSkill('${t}','${s.id}')">
-          ${s.name}
-          <div class="sk-tooltip"><b>${s.name}</b>
-${s.desc}</div>
-        </button>`).join('')}
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${skills.map(s=>{
+                    const bd=s.desc.split('\n').join('&#10;').split('"').join('&quot;');
+          return`<button class="sk-badge sk-badge-${t.toLowerCase()}${selSkills[t]===s.id?' sel':''}"
+            onclick="pickSkill('${t}','${s.id}')"
+            onmouseenter="showSkTip(event,this)" onmouseleave="hideSkTip()"
+            data-tip-title="${s.name}" data-tip-body="${bd}">${s.name}</button>`;
+        }).join('')}
       </div>
     </div>`;
   }).join('');
@@ -776,19 +770,19 @@ ${s.desc}</div>
     </div>`;
   }).join('');
 
-  // passive list: badge style (gray)
+  // passive list: badge style, JS tooltip
   document.getElementById('passive-list-lo').innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:5px">
     ${Object.values(PASSIVE_POOL).map(p=>{
       const sel=G.selectedPassives.includes(p.id);
-      return`<button class="sk-badge sk-badge-gray${sel?' sel':''}" onclick="togglePassive('${p.id}')">
-        ${p.name}
-        <div class="sk-tooltip"><b>${p.name}</b>
-${p.desc}</div>
-      </button>`;
+      const bd=p.desc.split(String.fromCharCode(10)).join('&#10;');
+      return`<button class="sk-badge sk-badge-gray${sel?' sel':''}"
+        onclick="togglePassive('${p.id}')"
+        onmouseenter="showSkTip(event,this)" onmouseleave="hideSkTip()"
+        data-tip-title="${p.name}" data-tip-body="${bd}">${p.name}</button>`;
     }).join('')}
   </div>`;
 
-  document.getElementById('cnt-co').textContent=G.selectedCombos.length+'/5';
+    document.getElementById('cnt-co').textContent=G.selectedCombos.length+'/5';
   document.getElementById('cnt-pa').textContent=(G.selectedPassives.length>0?'✓ ':'')+( G.selectedPassives[0] ? PASSIVE_POOL[G.selectedPassives[0]]?.name : 'none')+' (max 1)';
 }
 
@@ -798,44 +792,25 @@ function renderCombatLoadout(){
   const selSkills=G.selectedSkills;
   const en=ENEMY_POOL[G.currentEnemyId];
 
-  function renderSide(skillsObj, combos, passives, isPlayer){
+  function mkBadge(cls,name,title,desc){
+        const body=desc.split('\n').join('&#10;').split('"').join('&quot;');
+    return`<button class="sk-badge ${cls}" style="width:auto;padding:0 8px;font-size:10px;cursor:default;margin:2px"
+      onmouseenter="showSkTip(event,this)" onmouseleave="hideSkTip()"
+      data-tip-title="${title}" data-tip-body="${body}">${name}</button>`;
+  }
+  function renderSide(skillsObj, combos, passives){
     const types=['A','B','C','D','S'];
-    // skills row
     const skillsHtml=types.map(t=>{
-      const id=skillsObj[t];
-      const sk=SKILL_POOL[id];
-      if(!sk) return '';
-      return`<div style="position:relative;display:inline-block;margin:2px">
-        <button class="sk-badge sk-badge-${t.toLowerCase()} sel" style="width:auto;padding:0 8px;font-size:10px;cursor:default">
-          ${sk.name}
-          <div class="sk-tooltip"><b>${sk.name}</b> (${t})
-${sk.desc}</div>
-        </button>
-      </div>`;
+      const id=skillsObj[t];const sk=SKILL_POOL[id];if(!sk)return'';
+      return mkBadge('sk-badge-'+t.toLowerCase()+' sel',sk.name,sk.name+' ('+t+')',sk.desc);
     }).join('');
-    // combos
     const comboHtml=combos.map(cid=>{
-      const c=COMBO_POOL[cid];
-      if(!c) return '';
-      return`<div style="position:relative;display:inline-block;margin:2px">
-        <button class="sk-badge sk-badge-gray sel" style="width:auto;padding:0 8px;font-size:10px;cursor:default">
-          ${c.name}
-          <div class="sk-tooltip"><b>${c.name}</b>
-${c.desc}</div>
-        </button>
-      </div>`;
+      const c=COMBO_POOL[cid];if(!c)return'';
+      return mkBadge('sk-badge-gray sel',c.name,c.name,c.desc);
     }).join('');
-    // passives
     const paHtml=passives.map(pid=>{
-      const p=PASSIVE_POOL[pid];
-      if(!p) return '';
-      return`<div style="position:relative;display:inline-block;margin:2px">
-        <button class="sk-badge sk-badge-gray sel" style="width:auto;padding:0 8px;font-size:10px;cursor:default">
-          ${p.name}
-          <div class="sk-tooltip"><b>${p.name}</b>
-${p.desc}</div>
-        </button>
-      </div>`;
+      const p=PASSIVE_POOL[pid];if(!p)return'';
+      return mkBadge('sk-badge-gray sel',p.name,p.name,p.desc);
     }).join('');
     return`<div style="font-size:10px;color:var(--muted);margin-bottom:3px">skills</div>
       <div style="margin-bottom:6px">${skillsHtml||'—'}</div>
@@ -1267,13 +1242,21 @@ function renderChain(){
   // enemy chain
   const echainEl=document.getElementById('echain-disp');
   if(echainEl) echainEl.innerHTML=(G.eChain||[]).slice(-10).map(c=>`<span class="chip ${c.type.toLowerCase()}">${c.type}${c.result}</span>`).join('');
-  // combo progress
-  document.getElementById('combo-prog').innerHTML=G.selectedCombos.map(cid=>{
-    const c=COMBO_POOL[cid];if(!c)return'';
-    const tail=G.chain.slice(-c.pattern.length);
-    const matched=c.pattern.length>0&&c.pattern.every((step,i)=>{const t=tail[i];return t&&(step.type==='*'||t.type===step.type)&&(step.result==='*'||t.result===step.result)});
-    return`<span style="margin-right:10px">${c.name}: ${c.pattern.map(s=>`<span class="chip${matched?' match':''} ${s.type==='*'?'':s.type.toLowerCase()}">${s.type}${s.result}</span>`).join('')}→${c.desc.split('→').pop()}</span>`;
-  }).join('');
+  // combo progress — player + enemy
+  const en=G.currentEnemyId?ENEMY_POOL[G.currentEnemyId]:null;
+  function comboRow(chain, comboIds, label){
+    if(!comboIds||comboIds.length===0) return '';
+    const rows=comboIds.map(cid=>{
+      const c=COMBO_POOL[cid];if(!c)return'';
+      const tail=chain.slice(-c.pattern.length);
+      const matched=c.pattern.length>0&&c.pattern.every((step,i)=>{const t=tail[i];return t&&(step.type==='*'||t.type===step.type)&&(step.result==='*'||t.result===step.result)});
+      return`<span style="margin-right:8px">${c.name}: ${c.pattern.map(s=>`<span class="chip${matched?' match':''} ${s.type==='*'?'':s.type.toLowerCase()}">${s.type}${s.result}</span>`).join('')}→${c.desc.split('→').pop()}</span>`;
+    }).join('');
+    return rows?`<div style="margin-bottom:2px"><span style="font-size:9px;color:var(--faint);margin-right:4px">${label}</span>${rows}</div>`:'';
+  }
+  document.getElementById('combo-prog').innerHTML=
+    comboRow(G.chain, G.selectedCombos, 'P:')+
+    (en?comboRow(G.eChain||[], en.combos, 'E:'):'');
 }
 
 // ── UI ───────────────────────────────────────────────────
@@ -1387,9 +1370,31 @@ function resetAll(){
   document.getElementById('s-loadout').style.display='block';
 }
 
+// ── TOOLTIP ──────────────────────────────────────────────
+function showSkTip(e, el){
+  const t=document.getElementById('sk-tooltip-global');
+  const title=el.dataset.tipTitle||'';
+  const body=(el.dataset.tipBody||'').replace(/&#10;/g,'\n');
+  t.innerHTML='<b>'+title+'</b>\n'+body;
+  t.style.display='block';
+  const r=el.getBoundingClientRect();
+  const tw=Math.min(220, window.innerWidth-16);
+  t.style.maxWidth=tw+'px';
+  let left=r.left+r.width/2-tw/2;
+  let top=r.top-8;
+  left=Math.max(8,Math.min(left,window.innerWidth-tw-8));
+  if(top-t.offsetHeight<8) top=r.bottom+8; else top=top-t.offsetHeight;
+  t.style.left=left+'px';
+  t.style.top=top+'px';
+}
+function hideSkTip(){
+  document.getElementById('sk-tooltip-global').style.display='none';
+}
+
 // ── INIT ─────────────────────────────────────────────────
 G={selectedSkills:{A:'slash',B:'dash',C:'block',D:'heal',S:'nothing'},selectedCombos:['doublestrike','riposte','luckystrike'],selectedPassives:['battlerage']};
 renderLoadout();
 </script>
+<div id="sk-tooltip-global"></div>
 </body>
 </html>
