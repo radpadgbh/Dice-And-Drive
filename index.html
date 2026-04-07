@@ -429,14 +429,18 @@ const PASSIVE_POOL = {
     desc:'ชนะ clash → rage+1 (สะสมต่อ entity), ครบ 3 → dmg 5 ทันที',
     afterClash(result, ctx, myEntity, oppEntity){
       if(result!=='W') return;
-      myEntity._rage=(myEntity._rage||0)+1;
-      ctx.log('battle rage ('+ctx.side+'): '+(myEntity._rage)+'/3','info');
-      if(myEntity._rage>=3){
+      // เพิ่ม rage status แทน _rage
+      const existing = myEntity.statuses.find(s=>s.id==='rage');
+      if(existing) existing.potency++;
+      else myEntity.statuses.push({id:'rage', potency:1, count:99});
+      ctx.log('battle rage: '+( myEntity.statuses.find(s=>s.id==='rage')?.potency||0)+'/3','info');
+      const s = myEntity.statuses.find(x=>x.id==='rage');
+      if(s && s.potency>=3){
         oppEntity.hp=Math.max(0,oppEntity.hp-5);
-        myEntity._rage=0;
+        s.potency=0; // reset
         ctx.log('battle rage: trigger! dmg 5','combo');
-      }
-    }},
+  }
+}},
 
   ironskin:{id:'ironskin',name:'iron skin',
     desc:'hp<50% → ลด dmg ที่รับ 1',
