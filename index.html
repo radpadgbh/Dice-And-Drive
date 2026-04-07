@@ -105,9 +105,8 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .cnt{font-size:10px;padding:1px 6px;border-radius:5px;margin-left:5px}
 .enemy-card{border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:var(--bg3);cursor:default}
 .run-stat{display:inline-block;font-size:12px;padding:4px 10px;border-radius:6px;margin:3px;background:var(--bg3);border:0.5px solid var(--border2);font-family:'Space Mono',monospace}
-/* skill badge cards in loadout */
-.sk-badge{position:relative;display:inline-flex;align-items:center;justify-content:center;width:64px;height:36px;border-radius:8px;border:1.5px solid var(--border2);cursor:pointer;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;transition:all .12s;background:var(--bg3);color:var(--muted);overflow:visible}
-.sk-badge:hover{transform:translateY(-1px);z-index:10}
+.sk-badge{position:relative;display:inline-flex;align-items:center;justify-content:center;width:64px;height:32px;border-radius:8px;border:1.5px solid var(--border2);cursor:pointer;font-family:'Outfit',sans-serif;font-size:clamp(8px,2vw,11px);font-weight:700;transition:all .12s;background:var(--bg3);color:var(--muted);text-align:center;line-height:1.2;padding:2px 4px;word-break:break-word}
+.sk-badge:hover{transform:translateY(-1px)}
 .sk-badge.sel{border-width:2px}
 .sk-badge-a{border-color:var(--a-mid);background:var(--a-pale);color:var(--a)}.sk-badge-a.sel{background:var(--a);color:#1a0808;border-color:var(--a)}
 .sk-badge-b{border-color:var(--b-mid);background:var(--b-pale);color:var(--b)}.sk-badge-b.sel{background:var(--b);color:#080f1a;border-color:var(--b)}
@@ -115,16 +114,11 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .sk-badge-d{border-color:var(--d-mid);background:var(--d-pale);color:var(--d)}.sk-badge-d.sel{background:var(--d);color:#10081a;border-color:var(--d)}
 .sk-badge-s{border-color:var(--s-mid);background:var(--s-pale);color:var(--s)}.sk-badge-s.sel{background:var(--s);color:#1a1508;border-color:var(--s)}
 .sk-badge-gray{border-color:var(--border2);background:var(--bg3);color:var(--muted)}.sk-badge-gray.sel{border-color:rgba(255,255,255,0.3);background:var(--bg2);color:var(--text)}
-/* tooltip on hover */
-/* tooltip rendered via JS for dynamic positioning */
+.combat-lo{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.combat-lo-col{border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;background:var(--bg3)}
+.combat-lo-lbl{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
 #sk-tooltip-global{display:none;position:fixed;background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:11px;font-family:'Outfit',sans-serif;color:var(--muted);white-space:pre-line;line-height:1.5;max-width:220px;z-index:9999;pointer-events:none}
-/* combat loadout 2-col */
-.combat-lo{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
-.combat-lo-col{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px}
-.combat-lo-lbl{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-/* chain 2-col */
-.chain-cols{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.chain-col-lbl{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+#sk-tooltip-global{display:none;position:fixed;background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:11px;font-family:'Outfit',sans-serif;color:var(--muted);white-space:pre-line;line-height:1.5;max-width:220px;z-index:9999;pointer-events:none}
 </style>
 </head>
 <body>
@@ -188,7 +182,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
   </div>
 
   <div id="phase-roll" class="card">
-    <div class="lbl" id="roll-turn-lbl">รอบ 1 — phase 1: โยนเต๋า</div>
+    <div class="lbl" id="roll-turn-lbl">round 1 — phase 1: roll</div>
     <div style="display:flex;gap:10px;margin-bottom:10px">
       <div class="f1">
         <div style="font-size:11px;color:var(--muted);margin-bottom:5px">ของคุณ</div>
@@ -201,7 +195,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       </div>
       <div class="divider"></div>
       <div class="f1">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:5px">ศัตรู (เห็นหลัง หยุด)</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:5px">enemy (revealed after Stop)</div>
         <div id="e-dice" style="min-height:40px;color:var(--faint);font-size:12px;display:flex;align-items:center">—</div>
         <div class="mono" style="font-size:11px;color:var(--muted);margin-top:4px">
           รวม <span id="e-sum" style="color:var(--text)">—</span> |
@@ -210,8 +204,8 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       </div>
     </div>
     <div class="row" style="justify-content:center;gap:12px">
-      <button class="btn-roll" id="btn-roll" onclick="doRoll()">+ โยน</button>
-      <button class="btn-stop" onclick="stopRoll()">หยุด →</button>
+      <button class="btn-roll" id="btn-roll" onclick="doRoll()">+ Roll</button>
+      <button class="btn-stop" onclick="stopRoll()">Stop →</button>
     </div>
     <div id="roll-hint" style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px"></div>
   </div>
@@ -220,25 +214,23 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     <div class="lbl">phase 2: เลือก skill type</div>
     <div id="dice-summary" style="margin-bottom:12px;padding-bottom:10px;border-bottom:0.5px solid var(--border)"></div>
     <div class="type-grid" id="type-btns"></div>
-    <div class="hover-box" id="skill-hover">hover เพื่อดูรายละเอียด skill</div>
+    <div id="skill-hover" style="font-size:12px;font-family:'Space Mono',monospace;color:var(--muted);min-height:24px;padding:4px 0">— เลือก type —</div>
     <button class="btn-clash" onclick="doClash()">— CLASH —</button>
   </div>
 
   <div class="card">
-    <div class="chain-cols">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
       <div>
-        <div class="chain-col-lbl">player chain</div>
-        <div id="chain-disp" style="min-height:22px;flex-wrap:wrap;display:flex;gap:2px"></div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">player chain</div>
+        <div id="chain-disp" style="min-height:22px;display:flex;flex-wrap:wrap;gap:2px"></div>
       </div>
       <div>
-        <div class="chain-col-lbl">enemy chain</div>
-        <div id="echain-disp" style="min-height:22px;flex-wrap:wrap;display:flex;gap:2px"></div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">enemy chain</div>
+        <div id="echain-disp" style="min-height:22px;display:flex;flex-wrap:wrap;gap:2px"></div>
       </div>
     </div>
-    <div style="margin-top:8px">
-      <div class="chain-col-lbl">combo progress</div>
-      <div id="combo-prog" style="font-size:10px;line-height:2"></div>
-    </div>
+    <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">combo progress</div>
+    <div id="combo-prog" style="font-size:10px;line-height:2"></div>
   </div>
 
   <div class="card">
@@ -252,7 +244,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
   <div style="font-size:32px;margin-bottom:8px">⚔</div>
   <h2 id="vic-title" style="font-size:20px;font-weight:700;margin-bottom:6px"></h2>
   <p id="vic-sub" style="color:var(--muted);font-size:13px;margin-bottom:20px"></p>
-  <button class="btn" id="vic-btn" onclick="nextEnemy()" style="background:var(--win-bg);border-color:var(--win);color:var(--win);font-weight:700;padding:10px 24px">ต่อสู้ต่อ →</button>
+  <button class="btn" id="vic-btn" onclick="nextEnemy()" style="background:var(--win-bg);border-color:var(--win);color:var(--win);font-weight:700;padding:10px 24px">Continue →</button>
 </div>
 
 <!-- END (run over) -->
@@ -297,12 +289,13 @@ const SKILL_POOL = {
     onParry(sc){return fx({dmgOpp:1,log:'Slash parry: dmg 1'})},
     onLose(sc){return fx({log:'Slash lose: —'})}},
 
-  quickslash:{id:'quickslash',name:'Quick Slash',type:'A',
+// ขอตัดออกก่อน ดูซ้ำซ้อน
+/*  :{id:'quickslash',name:'Quick Slash',type:'A',
     desc:'onWin: dmg=ผลรวมเต๋า+2\nonParry: dmg 2\nonLose: —',
     onWin(sc){return fx({dmgOpp:sc.mySum+2,log:'Quick Slash: dmg '+(sc.mySum+2)})},
     onParry(sc){return fx({dmgOpp:2,log:'Quick Slash parry: dmg 2'})},
     onLose(sc){return fx({log:'Quick Slash lose: —'})}},
-
+*/
   jumpkick:{id:'jumpkick',name:'Jump Kick',type:'A',
     desc:'onWin: dmg=speed\nonParry: dmgboth 2\nonLose: —',
     onWin(sc){return fx({dmgOpp:sc.mySpd,statusOpp:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Jump Kick: dmg '+(sc.mySpd+' +debuff noB')})},
@@ -410,24 +403,33 @@ const SKILL_POOL = {
     onLose(sc){return fx({statusSelf:{id:'mustwin',potency:1,count:1},statusSelf2:{id:'regen',potency:1,count:1},log:'Warding Flame lose: mustwin+regen'})}},
 
   acidsiphon: {id: 'acidsiphon',name: 'Acid Siphon',type: 'D',
-  desc: 'onWin: Heal = Acid Potency * Count และลบ Acid ของศัตรูทิ้ง',
-  onWin(sc) {
-    // 1. เช็คก่อนว่าศัตรูติด Acid หรือไม่
-    const acid = sc.statusOpp;
-    if (acid) {
-      // 2. คำนวณค่าฮีล (Potency * Count)
-      const h = acid.potency * acid.count;
-      // 3. ลบ Acid ของศัตรูทิ้งทันที
-      delete sc.opp.buffs.acid;
-      return fx({
-        healSelf: h,
-        log: `Acid Siphon: ดูดกลืนกรดมาฟื้นฟู +${h} HP!`
-      });
-    } else {
-      // กรณีศัตรูไม่มี Acid ติดอยู่เลย
-      return fx({log: 'Acid Siphon: ศัตรูไม่มีกรดให้ดูดกลืน... (วืด)'});}},
-    onParry(sc) { return fx({ log: 'Acid Siphon: ล้มเหลว —' }); },
-    onLose(sc){return fx({statusSelf:{id:'mustwin',potency:1,count:1},log:'Arcane Focus lose: mustwin'})}},
+  desc: 'onWin: ถ้า mySum>oppSum → dmg+heal=acid(p×c) แล้วล้าง acid opp\nonLose: ล้าง acid opp + mustwin รอบหน้า',
+    onWin(sc){
+    // ดึง acid status จาก opp entity ตรงๆ
+    const isPlayer = sc.myDice === G.pDice;
+    const oppEnt = isPlayer ? G.e : G.p;
+    const acid = oppEnt.statuses.find(s=>s.id==='acid');
+
+    if(sc.mySum > sc.oppSum && acid){
+      const val = acid.potency * acid.count;
+      // ล้าง acid โดยตั้ง count=0 ให้ cleanStatuses จัดการ
+      acid.count = 0;
+      return fx({dmgOpp:val, healSelf:val,
+        log:'Acid Siphon: siphon '+val+' dmg+heal, acid cleared'});
+    } else if(acid){
+      acid.count = 0;
+      return fx({log:'Acid Siphon: win but mySum≤oppSum, acid cleared only'});
+    }
+    return fx({log:'Acid Siphon: win, no acid on opp'});
+  },
+  onParry(sc){return fx({log:'Acid Siphon parry: —'})},
+  onLose(sc){
+    const isPlayer = sc.myDice === G.pDice;
+    const oppEnt = isPlayer ? G.e : G.p;
+    const acid = oppEnt.statuses.find(s=>s.id==='acid');
+    if(acid) acid.count=0;
+    return fx({statusSelf:{id:'mustwin',potency:1,count:1},
+      log:'Acid Siphon lose: acid cleared + mustwin'});}},
 
   // ═══ TYPE S — SHOUT / KOAN ═══
   // บทลงโทษจากความโลภ ไม่มีผล หรือ combo setup หรือ บวกมาก=ลบมาก
@@ -442,6 +444,13 @@ const SKILL_POOL = {
     onWin(sc){return fx({healSelf:3,log:'"Empty your cup." — heal 3'})},
     onParry(sc){return fx({log:'"Empty your cup." — steady'})},
     onLose(sc){return fx({dmgSelf:5,log:'"Empty your cup." — lose control, dmg 5 self'})}},
+/*
+  scattered:{id:'scattered',name:'"Scattered"',type:'S',
+    desc:'onWin: )',
+    onWin(sc){return fx({statusOpp:{id:'acid',potency:1,count:3},log:'Scattered: acid 1p 3c'})},
+    onParry(sc){return fx({log:'"Empty your cup." — steady'})},
+    onLose(sc){return fx({dmgSelf:5,log:'"Empty your cup." — lose control, dmg 5 self'})}},
+*/
 };
 
 // ── PASSIVE POOL ────────────────────────────────────────
@@ -654,10 +663,10 @@ const COMBO_POOL = {
 // tier: 1=easy, 2=mid, 3=hard
 const ENEMY_POOL = {
   slime:{id:'slime',name:'SLIME',hp:55,
-    skills:{A:'slash',B:'dash',C:'block',D:'heal',S:'nothing'},
+    skills:{A:'bodyslam',B:'spitacid',C:'engulf',D:'acidsiphon',S:'nothing'},
     passives:[],combos:[]},
   goblin:{id:'goblin',name:'GOBLIN',hp:60,
-    skills:{A:'quickslash',B:'dash',C:'counter',D:'heal',S:'nothing'},
+    skills:{A:'slash',B:'dash',C:'counter',D:'heal',S:'nothing'},
     passives:['momentum'],combos:['doublestrike']},
   zombie:{id:'zombie',name:'ZOMBIE',hp:80,
     skills:{A:'slash',B:'heavyhit',C:'block',D:'meditate',S:'nothing'},
@@ -736,7 +745,6 @@ function renderLoadout(){
   const tnames={A:'aggressive',B:'dirty tricks',C:'martial art',D:'arcane',S:'shout / koan'};
   const selSkills=G.selectedSkills;
 
-  // skill list: type ละ ~5 สกิล badge แนวนอน, tooltip via JS
   document.getElementById('skill-list').innerHTML=types.map(t=>{
     const skills=Object.values(SKILL_POOL).filter(s=>s.type===t);
     const selName=selSkills[t]?SKILL_POOL[selSkills[t]]?.name:'—';
@@ -748,7 +756,7 @@ function renderLoadout(){
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:5px">
         ${skills.map(s=>{
-                    const bd=s.desc.split('\n').join('&#10;').split('"').join('&quot;');
+          const bd=s.desc.split('\n').join('&#10;').split('"').join('&quot;');
           return`<button class="sk-badge sk-badge-${t.toLowerCase()}${selSkills[t]===s.id?' sel':''}"
             onclick="pickSkill('${t}','${s.id}')"
             onmouseenter="showSkTip(event,this)" onmouseleave="hideSkTip()"
@@ -758,7 +766,6 @@ function renderLoadout(){
     </div>`;
   }).join('');
 
-  // combo list: badge style (gray)
   document.getElementById('combo-list-lo').innerHTML=Object.values(COMBO_POOL).map(c=>{
     const sel=G.selectedCombos.includes(c.id);
     const pat=c.pattern.map(s=>`<span class="chip ${s.type==='*'?'':s.type.toLowerCase()}">${s.type}${s.result}</span>`).join('');
@@ -770,11 +777,10 @@ function renderLoadout(){
     </div>`;
   }).join('');
 
-  // passive list: badge style, JS tooltip
   document.getElementById('passive-list-lo').innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:5px">
     ${Object.values(PASSIVE_POOL).map(p=>{
       const sel=G.selectedPassives.includes(p.id);
-      const bd=p.desc.split(String.fromCharCode(10)).join('&#10;');
+      const bd=p.desc.split('\n').join('&#10;');
       return`<button class="sk-badge sk-badge-gray${sel?' sel':''}"
         onclick="togglePassive('${p.id}')"
         onmouseenter="showSkTip(event,this)" onmouseleave="hideSkTip()"
@@ -782,53 +788,44 @@ function renderLoadout(){
     }).join('')}
   </div>`;
 
-    document.getElementById('cnt-co').textContent=G.selectedCombos.length+'/5';
-  document.getElementById('cnt-pa').textContent=(G.selectedPassives.length>0?'✓ ':'')+( G.selectedPassives[0] ? PASSIVE_POOL[G.selectedPassives[0]]?.name : 'none')+' (max 1)';
+  document.getElementById('cnt-co').textContent=G.selectedCombos.length+'/5';
+  document.getElementById('cnt-pa').textContent=(G.selectedPassives.length>0?'✓ ':'')+
+    (G.selectedPassives[0]?PASSIVE_POOL[G.selectedPassives[0]]?.name:'none')+' (max 1)';
 }
 
-// ── COMBAT LOADOUT PANEL ─────────────────────────────────
-// แสดงใน fight screen — player ซ้าย, enemy ขวา
 function renderCombatLoadout(){
-  const selSkills=G.selectedSkills;
+  if(!G.currentEnemyId) return;
   const en=ENEMY_POOL[G.currentEnemyId];
-
-  function mkBadge(cls,name,title,desc){
-        const body=desc.split('\n').join('&#10;').split('"').join('&quot;');
-    return`<button class="sk-badge ${cls}" style="width:auto;padding:0 8px;font-size:10px;cursor:default;margin:2px"
+  function mkBadge(cls,name,desc){
+    const bd=desc.split('\n').join('&#10;').split('"').join('&quot;');
+    return`<button class="sk-badge ${cls}" style="width:auto;min-width:48px;max-width:80px;height:28px;padding:0 6px;font-size:10px;cursor:default;margin:2px"
       onmouseenter="showSkTip(event,this)" onmouseleave="hideSkTip()"
-      data-tip-title="${title}" data-tip-body="${body}">${name}</button>`;
+      data-tip-title="${name}" data-tip-body="${bd}">${name}</button>`;
   }
-  function renderSide(skillsObj, combos, passives){
+  function renderSide(skillsObj,combos,passives){
     const types=['A','B','C','D','S'];
     const skillsHtml=types.map(t=>{
-      const id=skillsObj[t];const sk=SKILL_POOL[id];if(!sk)return'';
-      return mkBadge('sk-badge-'+t.toLowerCase()+' sel',sk.name,sk.name+' ('+t+')',sk.desc);
+      const sk=SKILL_POOL[skillsObj[t]];if(!sk)return'';
+      return mkBadge('sk-badge-'+t.toLowerCase()+' sel',sk.name,sk.name+' ('+t+')\n'+sk.desc);
     }).join('');
     const comboHtml=combos.map(cid=>{
       const c=COMBO_POOL[cid];if(!c)return'';
-      return mkBadge('sk-badge-gray sel',c.name,c.name,c.desc);
+      return mkBadge('sk-badge-gray sel',c.name,c.name+'\n'+c.desc);
     }).join('');
     const paHtml=passives.map(pid=>{
       const p=PASSIVE_POOL[pid];if(!p)return'';
-      return mkBadge('sk-badge-gray sel',p.name,p.name,p.desc);
+      return mkBadge('sk-badge-gray sel',p.name,p.name+'\n'+p.desc);
     }).join('');
-    return`<div style="font-size:10px;color:var(--muted);margin-bottom:3px">skills</div>
-      <div style="margin-bottom:6px">${skillsHtml||'—'}</div>
-      ${comboHtml?`<div style="font-size:10px;color:var(--muted);margin-bottom:3px">combos</div><div style="margin-bottom:6px">${comboHtml}</div>`:''}
-      ${paHtml?`<div style="font-size:10px;color:var(--muted);margin-bottom:3px">passive</div><div>${paHtml}</div>`:''}`;
+    return`<div style="font-size:9px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em">skills</div>
+      <div style="display:flex;flex-wrap:wrap;margin-bottom:5px">${skillsHtml||'—'}</div>
+      ${comboHtml?`<div style="font-size:9px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em">combos</div><div style="display:flex;flex-wrap:wrap;margin-bottom:5px">${comboHtml}</div>`:''}
+      ${paHtml?`<div style="font-size:9px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em">passive</div><div style="display:flex;flex-wrap:wrap">${paHtml}</div>`:''}`;
   }
-
-  const pSkills=G.selectedSkills;
-  const pCombos=G.selectedCombos;
-  const pPassives=G.selectedPassives;
-  document.getElementById('combat-lo-player').innerHTML=renderSide(pSkills,pCombos,pPassives,true);
-
-  const eSkills=en.skills;
-  const eCombos=en.combos;
-  const ePassives=en.passives;
+  document.getElementById('combat-lo-player').innerHTML=renderSide(G.selectedSkills,G.selectedCombos,G.selectedPassives);
   document.getElementById('combat-lo-enemy-lbl').textContent=en.name;
-  document.getElementById('combat-lo-enemy').innerHTML=renderSide(eSkills,eCombos,ePassives,false);
+  document.getElementById('combat-lo-enemy').innerHTML=renderSide(en.skills,en.combos,en.passives);
 }
+
 
 function pickSkill(t,id){G.selectedSkills[t]=id;renderLoadout()}
 function toggleCombo(id){const i=G.selectedCombos.indexOf(id);if(i>-1)G.selectedCombos.splice(i,1);else if(G.selectedCombos.length<5)G.selectedCombos.push(id);renderLoadout()}
@@ -894,7 +891,7 @@ function beginTurn(){
   document.getElementById('e-sum').textContent='—';
   document.getElementById('e-spd').textContent='—';
   document.getElementById('btn-roll').disabled=false;
-  document.getElementById('roll-turn-lbl').textContent='รอบ '+G.turn+' — phase 1: โยนเต๋า';
+  document.getElementById('roll-turn-lbl').textContent='round '+G.turn+' — phase 1: roll';
   document.getElementById('roll-hint').textContent='';
   triggerStatuses('turnStart');
   updateFightUI();
@@ -915,7 +912,7 @@ function doRoll(){
       setTimeout(()=>{const v2=Math.floor(Math.random()*6)+1;G.pDice.push(v2);G.pRolls++;renderPDice()},350);
   });
   if(G.pDice.reduce((a,b)=>a+b,0)>11){
-    document.getElementById('roll-hint').textContent='ผลรวมเกิน 11 — บังคับ type S!';
+    document.getElementById('roll-hint').textContent='sum > 11 — forced S!';
     document.getElementById('btn-roll').disabled=true;
     stopRoll();
   }
@@ -951,7 +948,7 @@ function enemyRoll(){
 }
 
 function stopRoll(){
-  if(G.pDice.length===0){document.getElementById('roll-hint').textContent='โยนเต๋าอย่างน้อย 1 ครั้ง!';return}
+  if(G.pDice.length===0){document.getElementById('roll-hint').textContent='Roll อย่างน้อย 1 ครั้ง!';return}
   G.phase='skill';
   if(!G.eRolled){enemyRoll();G.eRolled=true}
 
@@ -984,13 +981,13 @@ function renderDiceSummary(){
       <div style="flex:1">
         <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace">YOUR DICE</div>
         <div style="margin-bottom:4px">${G.pDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('')}</div>
-        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">รวม <span style="color:var(--text)">${pSum}</span> · โยน <span style="color:var(--text)">${G.pRolls}</span>x · spd <span style="color:var(--d)">${pSpd}</span>${pOnes>0?` · <span style="color:var(--win)">[1]×${pOnes}</span>`:''}</div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">รวม <span style="color:var(--text)">${pSum}</span> · roll <span style="color:var(--text)">${G.pRolls}</span>x · spd <span style="color:var(--d)">${pSpd}</span>${pOnes>0?` · <span style="color:var(--win)">[1]×${pOnes}</span>`:''}</div>
       </div>
       <div style="width:1px;background:var(--border)"></div>
       <div style="flex:1">
         <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace">ENEMY DICE</div>
         <div style="margin-bottom:4px">${G.eDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('')}</div>
-        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">รวม <span style="color:var(--text)">${eSum}</span> · โยน <span style="color:var(--text)">${G.eRolls}</span>x · spd <span style="color:var(--a)">${eSpd}</span>${eOnes>0?` · <span style="color:var(--win)">[1]×${eOnes}</span>`:''}</div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">รวม <span style="color:var(--text)">${eSum}</span> · roll <span style="color:var(--text)">${G.eRolls}</span>x · spd <span style="color:var(--a)">${eSpd}</span>${eOnes>0?` · <span style="color:var(--win)">[1]×${eOnes}</span>`:''}</div>
       </div>
     </div>`;
 }
@@ -1010,8 +1007,8 @@ function renderTypeButtons(){
   }).join('');
 }
 
-function showHint(t){const sk=SKILL_POOL[G.selectedSkills[t]];document.getElementById('skill-hover').innerHTML=sk?`<b>${sk.name}</b>\n${sk.desc}`:''}
-function clearHint(){const t=G.selectedType;if(t){const sk=SKILL_POOL[G.selectedSkills[t]];document.getElementById('skill-hover').innerHTML=`<b>${sk?.name}</b> selected`}else document.getElementById('skill-hover').textContent='hover เพื่อดูรายละเอียด skill'}
+function showHint(t){const sk=SKILL_POOL[G.selectedSkills[t]];document.getElementById('skill-hover').textContent=sk?sk.name:''}
+function clearHint(){const t=G.selectedType;const sk=t?SKILL_POOL[G.selectedSkills[t]]:null;document.getElementById('skill-hover').textContent=sk?sk.name+' (selected)':'— เลือก type —'}
 
 function pickType(t){
   const forced=G.pDice.reduce((a,b)=>a+b,0)>11;
@@ -1020,7 +1017,7 @@ function pickType(t){
   if(pLocks.includes(t)){addLog('type '+t+' ถูก lock ใช้ไม่ได้!','l');return}
   G.selectedType=t;renderTypeButtons();
   const sk=SKILL_POOL[G.selectedSkills[t]];
-  document.getElementById('skill-hover').innerHTML=sk?`<b>${sk.name}</b> selected\n${sk.desc}`:'';
+  document.getElementById('skill-hover').textContent=sk?sk.name+' (selected)':'';
 }
 
 function spdBonus(entity, passiveIds){
@@ -1121,30 +1118,6 @@ function resolveSkillEff(skill, result, sc){
 
 // apply a skill effect object — my=entity that used skill, opp=the other
 function applyEffect(eff, my, opp, side, result){
-  if(eff.dmgOpp>0){
-    let dmg=eff.dmgOpp;
-    if(opp===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(true,G))});
-    opp.hp=Math.max(0,opp.hp-dmg);
-    addLog((side==='player'?'P→E':'E→P')+' dmg '+dmg, side==='player'?'w':'l');
-    if(opp===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.onTakeDmg){G.e.hp=Math.max(0,G.e.hp-1);addLog('thorns: reflect 1','info')}});
-  }
-  if(eff.dmgSelf>0){
-    let dmg=eff.dmgSelf;
-    if(my===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(true,G))});
-    my.hp=Math.max(0,my.hp-dmg);
-    addLog((side==='player'?'P':'E')+' self dmg '+dmg,'l');
-  }
-  if(eff.healSelf>0){my.hp=Math.min(my.maxHp,my.hp+eff.healSelf);addLog((side==='player'?'P':'E')+' heal '+eff.healSelf,'w')}
-  if(eff.healOpp>0){opp.hp=Math.min(opp.maxHp,opp.hp+eff.healOpp);addLog((side==='player'?'P→E':'E→P')+' heal '+eff.healOpp,'w')}
-  if(eff.statusSelf) applyStatus(my, eff.statusSelf);
-  if(eff.statusSelf2) applyStatus(my, eff.statusSelf2);
-  if(eff.statusOpp)  applyStatus(opp, eff.statusOpp);
-  if(eff.log) addLog(eff.log, result==='W'?'w':result==='L'?'l':'p');
-  updateFightUI();
-}
-
-// apply a skill effect object — my=entity that used skill, opp=the other
-function applyEffect(eff, my, opp, side, result){
   const passivesOf=(e)=>e===G.p ? G.selectedPassives : ENEMY_POOL[G.currentEnemyId].passives;
 
   if(eff.dmgOpp>0){
@@ -1162,9 +1135,10 @@ function applyEffect(eff, my, opp, side, result){
   }
   if(eff.healSelf>0){my.hp=Math.min(my.maxHp,my.hp+eff.healSelf);addLog((side==='player'?'P':'E')+' heal '+eff.healSelf,'w')}
   if(eff.healOpp>0){opp.hp=Math.min(opp.maxHp,opp.hp+eff.healOpp);addLog((side==='player'?'P→E':'E→P')+' heal '+eff.healOpp,'w')}
-  if(eff.statusSelf) applyStatus(my, eff.statusSelf);
-  if(eff.statusSelf2) applyStatus(my, eff.statusSelf2);
-  if(eff.statusOpp)  applyStatus(opp, eff.statusOpp);
+  if(eff.statusSelf)  applyStatus(my,  eff.statusSelf);
+  if(eff.statusSelf2) applyStatus(my,  eff.statusSelf2);
+  if(eff.statusOpp)   applyStatus(opp, eff.statusOpp);
+  if(eff.statusOpp2)  applyStatus(opp, eff.statusOpp2);
   if(eff.log) addLog(eff.log, result==='W'?'w':result==='L'?'l':'p');
   updateFightUI();
 }
@@ -1237,15 +1211,13 @@ function checkCombos(chain, comboIds, myEnt, oppEnt, side){
 }
 
 function renderChain(){
-  // player chain
   document.getElementById('chain-disp').innerHTML=G.chain.slice(-10).map(c=>`<span class="chip ${c.type.toLowerCase()}">${c.type}${c.result}</span>`).join('');
-  // enemy chain
   const echainEl=document.getElementById('echain-disp');
   if(echainEl) echainEl.innerHTML=(G.eChain||[]).slice(-10).map(c=>`<span class="chip ${c.type.toLowerCase()}">${c.type}${c.result}</span>`).join('');
   // combo progress — player + enemy
   const en=G.currentEnemyId?ENEMY_POOL[G.currentEnemyId]:null;
-  function comboRow(chain, comboIds, label){
-    if(!comboIds||comboIds.length===0) return '';
+  function comboRow(chain,comboIds,label){
+    if(!comboIds||!comboIds.length) return '';
     const rows=comboIds.map(cid=>{
       const c=COMBO_POOL[cid];if(!c)return'';
       const tail=chain.slice(-c.pattern.length);
@@ -1255,8 +1227,8 @@ function renderChain(){
     return rows?`<div style="margin-bottom:2px"><span style="font-size:9px;color:var(--faint);margin-right:4px">${label}</span>${rows}</div>`:'';
   }
   document.getElementById('combo-prog').innerHTML=
-    comboRow(G.chain, G.selectedCombos, 'P:')+
-    (en?comboRow(G.eChain||[], en.combos, 'E:'):'');
+    comboRow(G.chain,G.selectedCombos,'P:')+
+    (en?comboRow(G.eChain||[],en.combos,'E:'):'');
 }
 
 // ── UI ───────────────────────────────────────────────────
@@ -1317,11 +1289,11 @@ function onEnemyDead(){
   document.getElementById('s-fight').style.display='none';
   document.getElementById('s-victory').style.display='block';
   const en=ENEMY_POOL[G.currentEnemyId];
-  document.getElementById('vic-title').textContent=en.name+' ถูกกำจัด!';
+  document.getElementById('vic-title').textContent=en.name+' defeated!';
   const next=pickNextEnemy();
   document.getElementById('vic-sub').textContent=
-    'Wave '+(RUN.wave-1)+' clear! | HP เหลือ '+Math.round(G.p.hp)+'/'+G.p.maxHp+
-    ' | ถัดไป: '+ENEMY_POOL[next.id].name+' (HP '+next.hp+')';
+    'Wave '+(RUN.wave-1)+' clear! | HP '+Math.round(G.p.hp)+'/'+G.p.maxHp+
+    ' | Next: '+ENEMY_POOL[next.id].name+' (HP '+next.hp+')';
   document.getElementById('vic-btn').onclick=()=>loadNextEnemy(next);
 }
 
@@ -1371,24 +1343,28 @@ function resetAll(){
 }
 
 // ── TOOLTIP ──────────────────────────────────────────────
-function showSkTip(e, el){
+function showSkTip(e,el){
   const t=document.getElementById('sk-tooltip-global');
-  const title=el.dataset.tipTitle||'';
-  const body=(el.dataset.tipBody||'').replace(/&#10;/g,'\n');
+  if(!t)return;
+  const title=el.getAttribute('data-tip-title')||'';
+  const body=(el.getAttribute('data-tip-body')||'').split('&#10;').join('\n');
   t.innerHTML='<b>'+title+'</b>\n'+body;
   t.style.display='block';
-  const r=el.getBoundingClientRect();
-  const tw=Math.min(220, window.innerWidth-16);
+  const tw=Math.min(220,window.innerWidth-16);
   t.style.maxWidth=tw+'px';
+  const r=el.getBoundingClientRect();
   let left=r.left+r.width/2-tw/2;
-  let top=r.top-8;
   left=Math.max(8,Math.min(left,window.innerWidth-tw-8));
-  if(top-t.offsetHeight<8) top=r.bottom+8; else top=top-t.offsetHeight;
   t.style.left=left+'px';
+  // measure height after set display
+  const th=t.offsetHeight;
+  let top=r.top-th-6;
+  if(top<8) top=r.bottom+6;
   t.style.top=top+'px';
 }
 function hideSkTip(){
-  document.getElementById('sk-tooltip-global').style.display='none';
+  const t=document.getElementById('sk-tooltip-global');
+  if(t) t.style.display='none';
 }
 
 // ── INIT ─────────────────────────────────────────────────
