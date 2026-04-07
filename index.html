@@ -105,6 +105,26 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .cnt{font-size:10px;padding:1px 6px;border-radius:5px;margin-left:5px}
 .enemy-card{border:0.5px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:var(--bg3);cursor:default}
 .run-stat{display:inline-block;font-size:12px;padding:4px 10px;border-radius:6px;margin:3px;background:var(--bg3);border:0.5px solid var(--border2);font-family:'Space Mono',monospace}
+/* skill badge cards in loadout */
+.sk-badge{position:relative;display:inline-flex;align-items:center;justify-content:center;width:64px;height:36px;border-radius:8px;border:1.5px solid var(--border2);cursor:pointer;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;transition:all .12s;background:var(--bg3);color:var(--muted);overflow:visible}
+.sk-badge:hover{transform:translateY(-1px);z-index:10}
+.sk-badge.sel{border-width:2px}
+.sk-badge-a{border-color:var(--a-mid);background:var(--a-pale);color:var(--a)}.sk-badge-a.sel{background:var(--a);color:#1a0808;border-color:var(--a)}
+.sk-badge-b{border-color:var(--b-mid);background:var(--b-pale);color:var(--b)}.sk-badge-b.sel{background:var(--b);color:#080f1a;border-color:var(--b)}
+.sk-badge-c{border-color:var(--c-mid);background:var(--c-pale);color:var(--c)}.sk-badge-c.sel{background:var(--c);color:#081a10;border-color:var(--c)}
+.sk-badge-d{border-color:var(--d-mid);background:var(--d-pale);color:var(--d)}.sk-badge-d.sel{background:var(--d);color:#10081a;border-color:var(--d)}
+.sk-badge-s{border-color:var(--s-mid);background:var(--s-pale);color:var(--s)}.sk-badge-s.sel{background:var(--s);color:#1a1508;border-color:var(--s)}
+.sk-badge-gray{border-color:var(--border2);background:var(--bg3);color:var(--muted)}.sk-badge-gray.sel{border-color:rgba(255,255,255,0.3);background:var(--bg2);color:var(--text)}
+/* tooltip on hover */
+.sk-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:11px;font-family:'Outfit',sans-serif;font-weight:400;color:var(--muted);white-space:pre-line;line-height:1.5;min-width:180px;max-width:240px;z-index:100;pointer-events:none;text-align:left}
+.sk-badge:hover .sk-tooltip{display:block}
+/* combat loadout 2-col */
+.combat-lo{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.combat-lo-col{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px}
+.combat-lo-lbl{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+/* chain 2-col */
+.chain-cols{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.chain-col-lbl{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -199,10 +219,34 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
   </div>
 
   <div class="card">
-    <div class="lbl">chain history</div>
-    <div id="chain-disp" style="margin-bottom:6px;min-height:22px"></div>
-    <div class="lbl" style="margin-top:6px">combo progress</div>
-    <div id="combo-prog" style="font-size:10px;line-height:2"></div>
+    <div class="chain-cols">
+      <div>
+        <div class="chain-col-lbl">player chain</div>
+        <div id="chain-disp" style="min-height:22px;flex-wrap:wrap;display:flex;gap:2px"></div>
+      </div>
+      <div>
+        <div class="chain-col-lbl">enemy chain</div>
+        <div id="echain-disp" style="min-height:22px;flex-wrap:wrap;display:flex;gap:2px"></div>
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <div class="chain-col-lbl">combo progress</div>
+      <div id="combo-prog" style="font-size:10px;line-height:2"></div>
+    </div>
+  </div>
+
+  <div class="card" id="combat-loadout-card">
+    <div class="combat-lo-lbl" style="margin-bottom:6px">loadout</div>
+    <div class="combat-lo">
+      <div class="combat-lo-col">
+        <div class="combat-lo-lbl">player</div>
+        <div id="combat-lo-player"></div>
+      </div>
+      <div class="combat-lo-col">
+        <div class="combat-lo-lbl" id="combat-lo-enemy-lbl">enemy</div>
+        <div id="combat-lo-enemy"></div>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -250,7 +294,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 // sc = skill context: { myDice, oppDice, myRolls, oppRolls, mySum, oppSum }
 // ตัวผู้ใช้ = "my" | ฝั่งตรงข้าม = "opp"
 
-function fx(o){return Object.assign({dmgOpp:0,dmgSelf:0,healSelf:0,healOpp:0,piercing:false,piercingSelf:false,statusSelf:null,statusSelf2:null,statusOpp:null,statusOpp2:null,log:''},o)}
+function fx(o){return Object.assign({dmgOpp:0,dmgSelf:0,healSelf:0,healOpp:0,statusSelf:null,statusSelf2:null,statusOpp:null,statusOpp2:null,log:''},o)}
 
 const SKILL_POOL = {
   // ═══ TYPE A — AGGRESSIVE ═══
@@ -373,26 +417,25 @@ const SKILL_POOL = {
     onParry(sc){return fx({statusOpp:{id:'burn',potency:1,count:1},log:'Warding Flame parry: burn 1p 1c'})},
     onLose(sc){return fx({statusSelf:{id:'mustwin',potency:1,count:1},statusSelf2:{id:'regen',potency:1,count:1},log:'Warding Flame lose: mustwin+regen'})}},
 
-  acidsiphon:{id:'acidsiphon',name:'Acid Siphon',type:'D',
-    desc:'onWin: ถ้า mySum>oppSum → dmg+heal=acid(p×c) แล้วล้าง acid opp\nonWin อื่น: ล้าง acid อย่างเดียว\nonLose: ล้าง acid + mustwin รอบหน้า',
-    onWin(sc){
-      const oppEnt=sc.side==='player'?G.e:G.p;
-      const acid=oppEnt.statuses.find(s=>s.id==='acid');
-      if(acid){
-        const val=acid.potency*acid.count;
-        acid.count=0; // cleanStatuses จะลบออก
-        if(sc.mySum>sc.oppSum) return fx({dmgOpp:val,healSelf:val,log:'Acid Siphon: siphon '+val+' dmg+heal, acid cleared'});
-        return fx({log:'Acid Siphon: mySum≤oppSum — acid cleared only'});
-      }
-      return fx({log:'Acid Siphon: no acid on opp'});
-    },
-    onParry(sc){return fx({log:'Acid Siphon parry: —'})},
-    onLose(sc){
-      const oppEnt=sc.side==='player'?G.e:G.p;
-      const acid=oppEnt.statuses.find(s=>s.id==='acid');
-      if(acid) acid.count=0;
-      return fx({statusSelf:{id:'mustwin',potency:1,count:1},log:'Acid Siphon lose: acid cleared + mustwin'});
-    }},
+  acidsiphon: {id: 'acidsiphon',name: 'Acid Siphon',type: 'D',
+  desc: 'onWin: Heal = Acid Potency * Count และลบ Acid ของศัตรูทิ้ง',
+  onWin(sc) {
+    // 1. เช็คก่อนว่าศัตรูติด Acid หรือไม่
+    const acid = sc.statusOpp;
+    if (acid) {
+      // 2. คำนวณค่าฮีล (Potency * Count)
+      const h = acid.potency * acid.count;
+      // 3. ลบ Acid ของศัตรูทิ้งทันที
+      delete sc.opp.buffs.acid;
+      return fx({
+        healSelf: h,
+        log: `Acid Siphon: ดูดกลืนกรดมาฟื้นฟู +${h} HP!`
+      });
+    } else {
+      // กรณีศัตรูไม่มี Acid ติดอยู่เลย
+      return fx({log: 'Acid Siphon: ศัตรูไม่มีกรดให้ดูดกลืน... (วืด)'});}},
+    onParry(sc) { return fx({ log: 'Acid Siphon: ล้มเหลว —' }); },
+    onLose(sc){return fx({statusSelf:{id:'mustwin',potency:1,count:1},log:'Arcane Focus lose: mustwin'})}},
 
   // ═══ TYPE S — SHOUT / KOAN ═══
   // บทลงโทษจากความโลภ ไม่มีผล หรือ combo setup หรือ บวกมาก=ลบมาก
@@ -425,7 +468,7 @@ const PASSIVE_POOL = {
       myEntity._rage=(myEntity._rage||0)+1;
       ctx.log('battle rage ('+ctx.side+'): '+(myEntity._rage)+'/3','info');
       if(myEntity._rage>=3){
-        dealEntity(oppEntity,5);
+        oppEntity.hp=Math.max(0,oppEntity.hp-5);
         myEntity._rage=0;
         ctx.log('battle rage: trigger! dmg 5','combo');
       }
@@ -543,8 +586,8 @@ const STATUS_POOL = {
         const actualHits=Math.min(hitDice,s.count);
         if(actualHits<=0) return;
         const dmg=s.potency*actualHits;
-        ctx.dealEntityP(entity,dmg);
-        ctx.log('[bleed] '+s.potency+'x'+actualHits+'='+dmg+' (piercing)','l');
+        ctx.dealEntity(entity,dmg);
+        ctx.log('[bleed] '+s.potency+'x'+actualHits+'='+dmg,'l');
         s.count-=actualHits;
       }
     }},
@@ -698,22 +741,30 @@ function loTab(t){
 
 function renderLoadout(){
   const types=['A','B','C','D','S'];
-  const tnames={A:'aggressive',B:'burst',C:'counter',D:'defensive',S:'special'};
+  const tnames={A:'aggressive',B:'dirty tricks',C:'martial art',D:'arcane',S:'shout / koan'};
   const selSkills=G.selectedSkills;
+
+  // skill list: type ละ ~5 สกิล ใน scroll box, badge style
   document.getElementById('skill-list').innerHTML=types.map(t=>{
     const skills=Object.values(SKILL_POOL).filter(s=>s.type===t);
-    return`<div style="margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+    const selName=selSkills[t]?SKILL_POOL[selSkills[t]]?.name:'—';
+    return`<div style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
         <span class="tbadge tbadge-${t.toLowerCase()}">${t}</span>
-        <span style="font-size:12px;color:var(--muted)">${tnames[t]}</span>
+        <span style="font-size:12px;color:var(--muted);flex:1">${tnames[t]}</span>
+        <span style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">✓ ${selName}</span>
       </div>
-      ${skills.map(s=>`<div class="sk-item${selSkills[t]===s.id?' sel-'+t.toLowerCase():''}" onclick="pickSkill('${t}','${s.id}')">
-        <div style="font-weight:600;font-size:13px">${s.name}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:3px;white-space:pre-line;line-height:1.5">${s.desc}</div>
-      </div>`).join('')}
+      <div style="display:flex;flex-wrap:wrap;gap:5px;max-height:96px;overflow-y:auto;padding-bottom:2px">
+        ${skills.map(s=>`<button class="sk-badge sk-badge-${t.toLowerCase()}${selSkills[t]===s.id?' sel':''}" onclick="pickSkill('${t}','${s.id}')">
+          ${s.name}
+          <div class="sk-tooltip"><b>${s.name}</b>
+${s.desc}</div>
+        </button>`).join('')}
+      </div>
     </div>`;
   }).join('');
 
+  // combo list: badge style (gray)
   document.getElementById('combo-list-lo').innerHTML=Object.values(COMBO_POOL).map(c=>{
     const sel=G.selectedCombos.includes(c.id);
     const pat=c.pattern.map(s=>`<span class="chip ${s.type==='*'?'':s.type.toLowerCase()}">${s.type}${s.result}</span>`).join('');
@@ -725,16 +776,83 @@ function renderLoadout(){
     </div>`;
   }).join('');
 
-  document.getElementById('passive-list-lo').innerHTML=Object.values(PASSIVE_POOL).map(p=>{
-    const sel=G.selectedPassives.includes(p.id);
-    return`<div class="sk-item${sel?' sel-passive':''}" onclick="togglePassive('${p.id}')">
-      <div style="font-weight:600;font-size:13px">${p.name}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:3px">${p.desc}</div>
-    </div>`;
-  }).join('');
+  // passive list: badge style (gray)
+  document.getElementById('passive-list-lo').innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:5px">
+    ${Object.values(PASSIVE_POOL).map(p=>{
+      const sel=G.selectedPassives.includes(p.id);
+      return`<button class="sk-badge sk-badge-gray${sel?' sel':''}" onclick="togglePassive('${p.id}')">
+        ${p.name}
+        <div class="sk-tooltip"><b>${p.name}</b>
+${p.desc}</div>
+      </button>`;
+    }).join('')}
+  </div>`;
 
   document.getElementById('cnt-co').textContent=G.selectedCombos.length+'/5';
   document.getElementById('cnt-pa').textContent=(G.selectedPassives.length>0?'✓ ':'')+( G.selectedPassives[0] ? PASSIVE_POOL[G.selectedPassives[0]]?.name : 'none')+' (max 1)';
+}
+
+// ── COMBAT LOADOUT PANEL ─────────────────────────────────
+// แสดงใน fight screen — player ซ้าย, enemy ขวา
+function renderCombatLoadout(){
+  const selSkills=G.selectedSkills;
+  const en=ENEMY_POOL[G.currentEnemyId];
+
+  function renderSide(skillsObj, combos, passives, isPlayer){
+    const types=['A','B','C','D','S'];
+    // skills row
+    const skillsHtml=types.map(t=>{
+      const id=skillsObj[t];
+      const sk=SKILL_POOL[id];
+      if(!sk) return '';
+      return`<div style="position:relative;display:inline-block;margin:2px">
+        <button class="sk-badge sk-badge-${t.toLowerCase()} sel" style="width:auto;padding:0 8px;font-size:10px;cursor:default">
+          ${sk.name}
+          <div class="sk-tooltip"><b>${sk.name}</b> (${t})
+${sk.desc}</div>
+        </button>
+      </div>`;
+    }).join('');
+    // combos
+    const comboHtml=combos.map(cid=>{
+      const c=COMBO_POOL[cid];
+      if(!c) return '';
+      return`<div style="position:relative;display:inline-block;margin:2px">
+        <button class="sk-badge sk-badge-gray sel" style="width:auto;padding:0 8px;font-size:10px;cursor:default">
+          ${c.name}
+          <div class="sk-tooltip"><b>${c.name}</b>
+${c.desc}</div>
+        </button>
+      </div>`;
+    }).join('');
+    // passives
+    const paHtml=passives.map(pid=>{
+      const p=PASSIVE_POOL[pid];
+      if(!p) return '';
+      return`<div style="position:relative;display:inline-block;margin:2px">
+        <button class="sk-badge sk-badge-gray sel" style="width:auto;padding:0 8px;font-size:10px;cursor:default">
+          ${p.name}
+          <div class="sk-tooltip"><b>${p.name}</b>
+${p.desc}</div>
+        </button>
+      </div>`;
+    }).join('');
+    return`<div style="font-size:10px;color:var(--muted);margin-bottom:3px">skills</div>
+      <div style="margin-bottom:6px">${skillsHtml||'—'}</div>
+      ${comboHtml?`<div style="font-size:10px;color:var(--muted);margin-bottom:3px">combos</div><div style="margin-bottom:6px">${comboHtml}</div>`:''}
+      ${paHtml?`<div style="font-size:10px;color:var(--muted);margin-bottom:3px">passive</div><div>${paHtml}</div>`:''}`;
+  }
+
+  const pSkills=G.selectedSkills;
+  const pCombos=G.selectedCombos;
+  const pPassives=G.selectedPassives;
+  document.getElementById('combat-lo-player').innerHTML=renderSide(pSkills,pCombos,pPassives,true);
+
+  const eSkills=en.skills;
+  const eCombos=en.combos;
+  const ePassives=en.passives;
+  document.getElementById('combat-lo-enemy-lbl').textContent=en.name;
+  document.getElementById('combat-lo-enemy').innerHTML=renderSide(eSkills,eCombos,ePassives,false);
 }
 
 function pickSkill(t,id){G.selectedSkills[t]=id;renderLoadout()}
@@ -776,6 +894,7 @@ function renderEnemyInfo(){
      <div><span style="color:var(--faint)">passive: </span>${passStr}</div>
      <div><span style="color:var(--faint)">combos: </span>${comboStr}</div>`;
   updateFightUI();
+  renderCombatLoadout();
 }
 
 function toggleEInfo(){
@@ -1026,34 +1145,51 @@ function resolveSkillEff(skill, result, sc){
 }
 
 // apply a skill effect object — my=entity that used skill, opp=the other
+function applyEffect(eff, my, opp, side, result){
+  if(eff.dmgOpp>0){
+    let dmg=eff.dmgOpp;
+    if(opp===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(true,G))});
+    opp.hp=Math.max(0,opp.hp-dmg);
+    addLog((side==='player'?'P→E':'E→P')+' dmg '+dmg, side==='player'?'w':'l');
+    if(opp===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.onTakeDmg){G.e.hp=Math.max(0,G.e.hp-1);addLog('thorns: reflect 1','info')}});
+  }
+  if(eff.dmgSelf>0){
+    let dmg=eff.dmgSelf;
+    if(my===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(true,G))});
+    my.hp=Math.max(0,my.hp-dmg);
+    addLog((side==='player'?'P':'E')+' self dmg '+dmg,'l');
+  }
+  if(eff.healSelf>0){my.hp=Math.min(my.maxHp,my.hp+eff.healSelf);addLog((side==='player'?'P':'E')+' heal '+eff.healSelf,'w')}
+  if(eff.healOpp>0){opp.hp=Math.min(opp.maxHp,opp.hp+eff.healOpp);addLog((side==='player'?'P→E':'E→P')+' heal '+eff.healOpp,'w')}
+  if(eff.statusSelf) applyStatus(my, eff.statusSelf);
+  if(eff.statusSelf2) applyStatus(my, eff.statusSelf2);
+  if(eff.statusOpp)  applyStatus(opp, eff.statusOpp);
+  if(eff.log) addLog(eff.log, result==='W'?'w':result==='L'?'l':'p');
+  updateFightUI();
+}
+
 // apply a skill effect object — my=entity that used skill, opp=the other
-// eff.piercing=true → dmgOpp ทะลุ shield | eff.piercingSelf=true → dmgSelf ทะลุ shield
 function applyEffect(eff, my, opp, side, result){
   const passivesOf=(e)=>e===G.p ? G.selectedPassives : ENEMY_POOL[G.currentEnemyId].passives;
 
   if(eff.dmgOpp>0){
     let dmg=eff.dmgOpp;
     passivesOf(opp).forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(opp))});
-    if(dmg>0){
-      eff.piercing ? dealEntityP(opp,dmg) : dealEntity(opp,dmg);
-      addLog((side==='player'?'P→E':'E→P')+' dmg '+dmg+(eff.piercing?' (piercing)':''), side==='player'?'w':'l');
-      passivesOf(opp).forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa._isThorns){dealEntityP(my,1);addLog('thorns: reflect 1','info')}});
-    }
+    opp.hp=Math.max(0,opp.hp-dmg);
+    addLog((side==='player'?'P→E':'E→P')+' dmg '+dmg, side==='player'?'w':'l');
+    passivesOf(opp).forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa._isThorns&&dmg>0){my.hp=Math.max(0,my.hp-1);addLog('thorns: reflect 1','info')}});
   }
   if(eff.dmgSelf>0){
     let dmg=eff.dmgSelf;
     passivesOf(my).forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(my))});
-    if(dmg>0){
-      eff.piercingSelf ? dealEntityP(my,dmg) : dealEntity(my,dmg);
-      addLog((side==='player'?'P':'E')+' self dmg '+dmg,'l');
-    }
+    my.hp=Math.max(0,my.hp-dmg);
+    addLog((side==='player'?'P':'E')+' self dmg '+dmg,'l');
   }
-  if(eff.healSelf>0){healEntity(my,eff.healSelf);addLog((side==='player'?'P':'E')+' heal '+eff.healSelf,'w')}
-  if(eff.healOpp>0){healEntity(opp,eff.healOpp);addLog((side==='player'?'P→E':'E→P')+' heal '+eff.healOpp,'w')}
-  if(eff.statusSelf)  applyStatus(my,  eff.statusSelf);
-  if(eff.statusSelf2) applyStatus(my,  eff.statusSelf2);
-  if(eff.statusOpp)   applyStatus(opp, eff.statusOpp);
-  if(eff.statusOpp2)  applyStatus(opp, eff.statusOpp2);
+  if(eff.healSelf>0){my.hp=Math.min(my.maxHp,my.hp+eff.healSelf);addLog((side==='player'?'P':'E')+' heal '+eff.healSelf,'w')}
+  if(eff.healOpp>0){opp.hp=Math.min(opp.maxHp,opp.hp+eff.healOpp);addLog((side==='player'?'P→E':'E→P')+' heal '+eff.healOpp,'w')}
+  if(eff.statusSelf) applyStatus(my, eff.statusSelf);
+  if(eff.statusSelf2) applyStatus(my, eff.statusSelf2);
+  if(eff.statusOpp)  applyStatus(opp, eff.statusOpp);
   if(eff.log) addLog(eff.log, result==='W'?'w':result==='L'?'l':'p');
   updateFightUI();
 }
@@ -1072,48 +1208,19 @@ function applyStatus(entity, s){
   addLog('status '+(entity===G.p?'P':'E')+': '+s.id+' '+s.potency+'p '+s.count+'c','info');
 }
 
-// ── DAMAGE / HEAL GLOBALS ──────────────────────────────────────────
-// ใช้ทุกที่แทนการ .hp -= ตรงๆ
-// dealEntity    — หัก shield ก่อน ถ้า shield หมดค่อยหัก hp
-// dealEntityP   — piercing: ทะลุ shield ไปหัก hp ตรงๆ
-// healEntity    — heal hp ไม่เกิน maxHp
-function dealEntity(entity, amount){
-  if(amount<=0) return;
-  if(entity._shieldHp>0){
-    const absorbed=Math.min(entity._shieldHp, amount);
-    entity._shieldHp-=absorbed;
-    amount-=absorbed;
-    if(entity._shieldHp<=0){
-      entity._shieldHp=0;
-      entity.statuses=entity.statuses.filter(s=>s.id!=='shield');
-    }
-  }
-  if(amount>0) entity.hp=Math.max(0,entity.hp-amount);
-}
-function dealEntityP(entity, amount){
-  // piercing — ทะลุ shield ตรง hp เลย
-  if(amount<=0) return;
-  entity.hp=Math.max(0,entity.hp-amount);
-}
-function healEntity(entity, amount){
-  if(amount<=0) return;
-  entity.hp=Math.min(entity.maxHp,entity.hp+amount);
-}
-
 function makeDummyCtx(){
   return{
     G,
-    deal(target,amount){if(target==='enemy')dealEntity(G.e,amount);else dealEntity(G.p,amount)},
-    heal(target,amount){if(target==='player')healEntity(G.p,amount);else healEntity(G.e,amount)},
+    deal(target,amount){if(target==='enemy')G.e.hp=Math.max(0,G.e.hp-amount);else G.p.hp=Math.max(0,G.p.hp-amount)},
+    heal(target,amount){if(target==='player')G.p.hp=Math.min(G.p.maxHp,G.p.hp+amount);else G.e.hp=Math.min(G.e.maxHp,G.e.hp+amount)},
     log:addLog,
   };
 }
 
 function triggerStatuses(timing){
   const ctx=makeDummyCtx();
-  ctx.dealEntity=dealEntity;       // หัก shield ก่อน (burn, acid)
-  ctx.dealEntityP=dealEntityP;     // piercing — ทะลุ shield (bleed)
-  ctx.healEntity=healEntity;
+  ctx.dealEntity=(entity,amount)=>{entity.hp=Math.max(0,entity.hp-amount)};
+  ctx.healEntity=(entity,amount)=>{entity.hp=Math.min(entity.maxHp,entity.hp+amount)};
   ctx.overrideResult=(side,val)=>{
     if(!G.resultOverride) G.resultOverride={};
     G.resultOverride[side]=val;
@@ -1155,7 +1262,12 @@ function checkCombos(chain, comboIds, myEnt, oppEnt, side){
 }
 
 function renderChain(){
-  document.getElementById('chain-disp').innerHTML=G.chain.slice(-8).map(c=>`<span class="chip ${c.type.toLowerCase()}">${c.type}${c.result}</span>`).join('');
+  // player chain
+  document.getElementById('chain-disp').innerHTML=G.chain.slice(-10).map(c=>`<span class="chip ${c.type.toLowerCase()}">${c.type}${c.result}</span>`).join('');
+  // enemy chain
+  const echainEl=document.getElementById('echain-disp');
+  if(echainEl) echainEl.innerHTML=(G.eChain||[]).slice(-10).map(c=>`<span class="chip ${c.type.toLowerCase()}">${c.type}${c.result}</span>`).join('');
+  // combo progress
   document.getElementById('combo-prog').innerHTML=G.selectedCombos.map(cid=>{
     const c=COMBO_POOL[cid];if(!c)return'';
     const tail=G.chain.slice(-c.pattern.length);
