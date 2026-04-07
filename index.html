@@ -250,7 +250,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 // sc = skill context: { myDice, oppDice, myRolls, oppRolls, mySum, oppSum }
 // ตัวผู้ใช้ = "my" | ฝั่งตรงข้าม = "opp"
 
-function fx(o){return Object.assign({dmgOpp:0,dmgSelf:0,healSelf:0,healOpp:0,statusSelf:null,statusSelf2:null,statusOpp:null,statusOpp2:null,log:''},o)}
+function fx(o){return Object.assign({dmgOpp:0,dmgSelf:0,healSelf:0,healOpp:0,piercing:false,piercingSelf:false,statusSelf:null,statusSelf2:null,statusOpp:null,statusOpp2:null,log:''},o)}
 
 const SKILL_POOL = {
   // ═══ TYPE A — AGGRESSIVE ═══
@@ -373,25 +373,26 @@ const SKILL_POOL = {
     onParry(sc){return fx({statusOpp:{id:'burn',potency:1,count:1},log:'Warding Flame parry: burn 1p 1c'})},
     onLose(sc){return fx({statusSelf:{id:'mustwin',potency:1,count:1},statusSelf2:{id:'regen',potency:1,count:1},log:'Warding Flame lose: mustwin+regen'})}},
 
-  acidsiphon: {id: 'acidsiphon',name: 'Acid Siphon',type: 'D',
-  desc: 'onWin: Heal = Acid Potency * Count และลบ Acid ของศัตรูทิ้ง',
-  onWin(sc) {
-    // 1. เช็คก่อนว่าศัตรูติด Acid หรือไม่
-    const acid = sc.statusOpp;
-    if (acid) {
-      // 2. คำนวณค่าฮีล (Potency * Count)
-      const h = acid.potency * acid.count;
-      // 3. ลบ Acid ของศัตรูทิ้งทันที
-      delete sc.opp.buffs.acid;
-      return fx({
-        healSelf: h,
-        log: `Acid Siphon: ดูดกลืนกรดมาฟื้นฟู +${h} HP!`
-      });
-    } else {
-      // กรณีศัตรูไม่มี Acid ติดอยู่เลย
-      return fx({log: 'Acid Siphon: ศัตรูไม่มีกรดให้ดูดกลืน... (วืด)'});}},
-    onParry(sc) { return fx({ log: 'Acid Siphon: ล้มเหลว —' }); },
-    onLose(sc){return fx({statusSelf:{id:'mustwin',potency:1,count:1},log:'Arcane Focus lose: mustwin'})}},
+  acidsiphon:{id:'acidsiphon',name:'Acid Siphon',type:'D',
+    desc:'onWin: ถ้า mySum>oppSum → dmg+heal=acid(p×c) แล้วล้าง acid opp\nonWin อื่น: ล้าง acid อย่างเดียว\nonLose: ล้าง acid + mustwin รอบหน้า',
+    onWin(sc){
+      const oppEnt=sc.side==='player'?G.e:G.p;
+      const acid=oppEnt.statuses.find(s=>s.id==='acid');
+      if(acid){
+        const val=acid.potency*acid.count;
+        acid.count=0; // cleanStatuses จะลบออก
+        if(sc.mySum>sc.oppSum) return fx({dmgOpp:val,healSelf:val,log:'Acid Siphon: siphon '+val+' dmg+heal, acid cleared'});
+        return fx({log:'Acid Siphon: mySum≤oppSum — acid cleared only'});
+      }
+      return fx({log:'Acid Siphon: no acid on opp'});
+    },
+    onParry(sc){return fx({log:'Acid Siphon parry: —'})},
+    onLose(sc){
+      const oppEnt=sc.side==='player'?G.e:G.p;
+      const acid=oppEnt.statuses.find(s=>s.id==='acid');
+      if(acid) acid.count=0;
+      return fx({statusSelf:{id:'mustwin',potency:1,count:1},log:'Acid Siphon lose: acid cleared + mustwin'});
+    }},
 
   // ═══ TYPE S — SHOUT / KOAN ═══
   // บทลงโทษจากความโลภ ไม่มีผล หรือ combo setup หรือ บวกมาก=ลบมาก
@@ -424,7 +425,7 @@ const PASSIVE_POOL = {
       myEntity._rage=(myEntity._rage||0)+1;
       ctx.log('battle rage ('+ctx.side+'): '+(myEntity._rage)+'/3','info');
       if(myEntity._rage>=3){
-        oppEntity.hp=Math.max(0,oppEntity.hp-5);
+        dealEntity(oppEntity,5);
         myEntity._rage=0;
         ctx.log('battle rage: trigger! dmg 5','combo');
       }
@@ -468,25 +469,21 @@ const STATUS_POOL = {
       }
     }},
 
-  // shield: turnStart เพิ่ม maxHp ครั้งแรก (_applied flag), turnEnd ลด count และคืน maxHp เมื่อหมด
+  // shield: _shieldHp คือ HP พิเศษที่นับแยก ไม่แตะ maxHp จริง
+  // hpDisplay อ่าน _shieldHp แล้วแสดงเป็นแถบสีขาวต่อจาก HP ปกติ
   shield:{id:'shield',name:'shield',priority:15,color:'buff',
-    desc:'turnStart: เพิ่ม maxHp=potency (ครั้งแรก)\nturnEnd: count-1 ถ้า=0 คืน maxHp',
+    desc:'เพิ่ม shield HP=potency (แสดงสีขาว)\nturnEnd: count-1 ถ้า=0 ลบ shield',
     hooks:{
       turnStart(entity,s,ctx){
         if(!s._applied){
           s._applied=true;
           entity._shieldHp=(entity._shieldHp||0)+s.potency;
-          entity.maxHp+=s.potency;
-          entity.hp+=s.potency;
-          ctx.log('[shield] +'+s.potency+' maxHp','w');
+          ctx.log('[shield] +'+s.potency+' shield HP','w');
         }
       },
       turnEnd(entity,s,ctx){
         s.count--;
         if(s.count<=0){
-          const sh=entity._shieldHp||0;
-          entity.maxHp=Math.max(1,entity.maxHp-sh);
-          entity.hp=Math.min(entity.hp,entity.maxHp);
           entity._shieldHp=0;
           ctx.log('[shield] expired','info');
         }
@@ -546,8 +543,8 @@ const STATUS_POOL = {
         const actualHits=Math.min(hitDice,s.count);
         if(actualHits<=0) return;
         const dmg=s.potency*actualHits;
-        ctx.dealEntity(entity,dmg);
-        ctx.log('[bleed] '+s.potency+'x'+actualHits+'='+dmg,'l');
+        ctx.dealEntityP(entity,dmg);
+        ctx.log('[bleed] '+s.potency+'x'+actualHits+'='+dmg+' (piercing)','l');
         s.count-=actualHits;
       }
     }},
@@ -1029,51 +1026,34 @@ function resolveSkillEff(skill, result, sc){
 }
 
 // apply a skill effect object — my=entity that used skill, opp=the other
-function applyEffect(eff, my, opp, side, result){
-  if(eff.dmgOpp>0){
-    let dmg=eff.dmgOpp;
-    if(opp===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(true,G))});
-    opp.hp=Math.max(0,opp.hp-dmg);
-    addLog((side==='player'?'P→E':'E→P')+' dmg '+dmg, side==='player'?'w':'l');
-    if(opp===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.onTakeDmg){G.e.hp=Math.max(0,G.e.hp-1);addLog('thorns: reflect 1','info')}});
-  }
-  if(eff.dmgSelf>0){
-    let dmg=eff.dmgSelf;
-    if(my===G.p) G.selectedPassives.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(true,G))});
-    my.hp=Math.max(0,my.hp-dmg);
-    addLog((side==='player'?'P':'E')+' self dmg '+dmg,'l');
-  }
-  if(eff.healSelf>0){my.hp=Math.min(my.maxHp,my.hp+eff.healSelf);addLog((side==='player'?'P':'E')+' heal '+eff.healSelf,'w')}
-  if(eff.healOpp>0){opp.hp=Math.min(opp.maxHp,opp.hp+eff.healOpp);addLog((side==='player'?'P→E':'E→P')+' heal '+eff.healOpp,'w')}
-  if(eff.statusSelf) applyStatus(my, eff.statusSelf);
-  if(eff.statusSelf2) applyStatus(my, eff.statusSelf2);
-  if(eff.statusOpp)  applyStatus(opp, eff.statusOpp);
-  if(eff.log) addLog(eff.log, result==='W'?'w':result==='L'?'l':'p');
-  updateFightUI();
-}
-
 // apply a skill effect object — my=entity that used skill, opp=the other
+// eff.piercing=true → dmgOpp ทะลุ shield | eff.piercingSelf=true → dmgSelf ทะลุ shield
 function applyEffect(eff, my, opp, side, result){
   const passivesOf=(e)=>e===G.p ? G.selectedPassives : ENEMY_POOL[G.currentEnemyId].passives;
 
   if(eff.dmgOpp>0){
     let dmg=eff.dmgOpp;
     passivesOf(opp).forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(opp))});
-    opp.hp=Math.max(0,opp.hp-dmg);
-    addLog((side==='player'?'P→E':'E→P')+' dmg '+dmg, side==='player'?'w':'l');
-    passivesOf(opp).forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa._isThorns&&dmg>0){my.hp=Math.max(0,my.hp-1);addLog('thorns: reflect 1','info')}});
+    if(dmg>0){
+      eff.piercing ? dealEntityP(opp,dmg) : dealEntity(opp,dmg);
+      addLog((side==='player'?'P→E':'E→P')+' dmg '+dmg+(eff.piercing?' (piercing)':''), side==='player'?'w':'l');
+      passivesOf(opp).forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa._isThorns){dealEntityP(my,1);addLog('thorns: reflect 1','info')}});
+    }
   }
   if(eff.dmgSelf>0){
     let dmg=eff.dmgSelf;
     passivesOf(my).forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.damageReduction)dmg=Math.max(0,dmg-pa.damageReduction(my))});
-    my.hp=Math.max(0,my.hp-dmg);
-    addLog((side==='player'?'P':'E')+' self dmg '+dmg,'l');
+    if(dmg>0){
+      eff.piercingSelf ? dealEntityP(my,dmg) : dealEntity(my,dmg);
+      addLog((side==='player'?'P':'E')+' self dmg '+dmg,'l');
+    }
   }
-  if(eff.healSelf>0){my.hp=Math.min(my.maxHp,my.hp+eff.healSelf);addLog((side==='player'?'P':'E')+' heal '+eff.healSelf,'w')}
-  if(eff.healOpp>0){opp.hp=Math.min(opp.maxHp,opp.hp+eff.healOpp);addLog((side==='player'?'P→E':'E→P')+' heal '+eff.healOpp,'w')}
-  if(eff.statusSelf) applyStatus(my, eff.statusSelf);
-  if(eff.statusSelf2) applyStatus(my, eff.statusSelf2);
-  if(eff.statusOpp)  applyStatus(opp, eff.statusOpp);
+  if(eff.healSelf>0){healEntity(my,eff.healSelf);addLog((side==='player'?'P':'E')+' heal '+eff.healSelf,'w')}
+  if(eff.healOpp>0){healEntity(opp,eff.healOpp);addLog((side==='player'?'P→E':'E→P')+' heal '+eff.healOpp,'w')}
+  if(eff.statusSelf)  applyStatus(my,  eff.statusSelf);
+  if(eff.statusSelf2) applyStatus(my,  eff.statusSelf2);
+  if(eff.statusOpp)   applyStatus(opp, eff.statusOpp);
+  if(eff.statusOpp2)  applyStatus(opp, eff.statusOpp2);
   if(eff.log) addLog(eff.log, result==='W'?'w':result==='L'?'l':'p');
   updateFightUI();
 }
@@ -1092,19 +1072,48 @@ function applyStatus(entity, s){
   addLog('status '+(entity===G.p?'P':'E')+': '+s.id+' '+s.potency+'p '+s.count+'c','info');
 }
 
+// ── DAMAGE / HEAL GLOBALS ──────────────────────────────────────────
+// ใช้ทุกที่แทนการ .hp -= ตรงๆ
+// dealEntity    — หัก shield ก่อน ถ้า shield หมดค่อยหัก hp
+// dealEntityP   — piercing: ทะลุ shield ไปหัก hp ตรงๆ
+// healEntity    — heal hp ไม่เกิน maxHp
+function dealEntity(entity, amount){
+  if(amount<=0) return;
+  if(entity._shieldHp>0){
+    const absorbed=Math.min(entity._shieldHp, amount);
+    entity._shieldHp-=absorbed;
+    amount-=absorbed;
+    if(entity._shieldHp<=0){
+      entity._shieldHp=0;
+      entity.statuses=entity.statuses.filter(s=>s.id!=='shield');
+    }
+  }
+  if(amount>0) entity.hp=Math.max(0,entity.hp-amount);
+}
+function dealEntityP(entity, amount){
+  // piercing — ทะลุ shield ตรง hp เลย
+  if(amount<=0) return;
+  entity.hp=Math.max(0,entity.hp-amount);
+}
+function healEntity(entity, amount){
+  if(amount<=0) return;
+  entity.hp=Math.min(entity.maxHp,entity.hp+amount);
+}
+
 function makeDummyCtx(){
   return{
     G,
-    deal(target,amount){if(target==='enemy')G.e.hp=Math.max(0,G.e.hp-amount);else G.p.hp=Math.max(0,G.p.hp-amount)},
-    heal(target,amount){if(target==='player')G.p.hp=Math.min(G.p.maxHp,G.p.hp+amount);else G.e.hp=Math.min(G.e.maxHp,G.e.hp+amount)},
+    deal(target,amount){if(target==='enemy')dealEntity(G.e,amount);else dealEntity(G.p,amount)},
+    heal(target,amount){if(target==='player')healEntity(G.p,amount);else healEntity(G.e,amount)},
     log:addLog,
   };
 }
 
 function triggerStatuses(timing){
   const ctx=makeDummyCtx();
-  ctx.dealEntity=(entity,amount)=>{entity.hp=Math.max(0,entity.hp-amount)};
-  ctx.healEntity=(entity,amount)=>{entity.hp=Math.min(entity.maxHp,entity.hp+amount)};
+  ctx.dealEntity=dealEntity;       // หัก shield ก่อน (burn, acid)
+  ctx.dealEntityP=dealEntityP;     // piercing — ทะลุ shield (bleed)
+  ctx.healEntity=healEntity;
   ctx.overrideResult=(side,val)=>{
     if(!G.resultOverride) G.resultOverride={};
     G.resultOverride[side]=val;
@@ -1160,16 +1169,17 @@ function updateFightUI(){
   const p=G.p,e=G.e;
   function hpDisplay(entity,barId,textId,col){
     const sh=entity._shieldHp||0;
-    const baseMax=entity.maxHp-sh;
-    const baseHp=Math.max(0,Math.min(entity.hp,baseMax));
-    const shHp=Math.max(0,entity.hp-baseMax);
-    const pBase=entity.maxHp>0?baseHp/entity.maxHp*100:0;
-    const pSh=entity.maxHp>0?shHp/entity.maxHp*100:0;
-    document.getElementById(textId).textContent=Math.max(0,Math.round(entity.hp))+'/'+entity.maxHp+(sh>0?' [+'+Math.round(shHp)+']':'');
+    const pBase=entity.maxHp>0?Math.max(0,entity.hp)/entity.maxHp*100:0;
+    // shield bar แสดงเป็น % ของ maxHp เช่นกัน (cap ที่ 100% รวม)
+    const totalForBar=entity.maxHp+sh;
+    const pNormal=totalForBar>0?Math.max(0,entity.hp)/totalForBar*100:0;
+    const pShield=totalForBar>0?sh/totalForBar*100:0;
+    const shieldText=sh>0?' [+'+sh+']':'';
+    document.getElementById(textId).textContent=Math.max(0,Math.round(entity.hp))+'/'+entity.maxHp+shieldText;
     const bar=document.getElementById(barId);
     bar.innerHTML='';bar.style.cssText='display:flex;align-items:center;height:100%;background:var(--bg3);border-radius:3px;overflow:hidden';
-    if(pBase>0){const d=document.createElement('div');d.style.cssText='height:100%;width:'+pBase+'%;background:'+col+';transition:width .4s';bar.appendChild(d)}
-    if(pSh>0){const d=document.createElement('div');d.style.cssText='height:100%;width:'+pSh+'%;background:#e8e8f0;transition:width .4s';bar.appendChild(d)}
+    if(pNormal>0){const d=document.createElement('div');d.style.cssText='height:100%;width:'+pNormal+'%;background:'+col+';transition:width .4s';bar.appendChild(d)}
+    if(pShield>0){const d=document.createElement('div');d.style.cssText='height:100%;width:'+pShield+'%;background:#e8e8f0;transition:width .4s';bar.appendChild(d)}
   }
   hpDisplay(p,'p-hp-b','p-hp-t','var(--win)');
   hpDisplay(e,'e-hp-b','e-hp-t','var(--lose)');
