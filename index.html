@@ -280,14 +280,14 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 // sc = skill context: { myDice, oppDice, myRolls, oppRolls, mySum, oppSum }
 // ตัวผู้ใช้ = "my" | ฝั่งตรงข้าม = "opp"
 
-function fx(o){return Object.assign({dmgOpp:0,dmgSelf:0,healSelf:0,healOpp:0,statusSelf:null,statusSelf2:null,statusOpp:null,statusOpp2:null,log:''},o)}
+function fx(o){return Object.assign({dmgOpp:0,dmgSelf:0,healSelf:0,healOpp:0,statusSelfs:null,statusOpps:null,log:''},o)}
 
 const SKILL_POOL = {
   // ═══ TYPE A — AGGRESSIVE ═══
   // เน้นดาเมจมีเงื่อนไข ถ้าไม่เข้าเงื่อนไข ดาเมจเบา
   slash:{id:'slash',name:'Slash',type:'A',
     desc:'onWin: dmg=ผลรวมเต๋า + debuff noB\nonParry: dmg 1\nonLose: —',
-    onWin(sc){return fx({dmgOpp:sc.mySum,statusOpp:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Slash: dmg '+sc.mySum+' +debuff noB'})},
+    onWin(sc){return fx({dmgOpp:sc.mySum,statusOpps:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Slash: dmg '+sc.mySum+' +debuff noB'})},
     onParry(sc){return fx({dmgOpp:1,log:'Slash parry: dmg 1'})},
     onLose(sc){return fx({log:'Slash lose: —'})}},
 	
@@ -300,7 +300,7 @@ const SKILL_POOL = {
 */
   jumpkick:{id:'jumpkick',name:'Jump Kick',type:'A',
     desc:'onWin: dmg=speed\nonParry: dmgboth 2\nonLose: —',
-    onWin(sc){return fx({dmgOpp:sc.mySpd,statusOpp:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Jump Kick: dmg '+(sc.mySpd+' +debuff noB')})},
+    onWin(sc){return fx({dmgOpp:sc.mySpd,statusOpps:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Jump Kick: dmg '+(sc.mySpd+' +debuff noB')})},
     onParry(sc){return fx({dmgOpp:2,dmgSelf:2,log:'Jump Kick parry: dmgboth 2'})},
     onLose(sc){return fx({log:'Jump Kick: —'})}},
 
@@ -326,7 +326,7 @@ const SKILL_POOL = {
   // เน้น CC debuff interrupt เต๋าต่ำเป็นประโยชน์
   dash:{id:'dash',name:'Dirty Dash',type:'B',
     desc:'onWin: dmg=ผลรวมเต๋า + debuff noC\nonParry: dmg 1\nonLose: —',
-    onWin(sc){return fx({dmgOpp:sc.mySum,statusOpp:{id:'locktype',potency:0,count:1,lockedType:'C'},log:'Dirty Dash: dmg '+sc.mySum+' +debuff noC'})},
+    onWin(sc){return fx({dmgOpp:sc.mySum,statusOpps:{id:'locktype',potency:0,count:1,lockedType:'C'},log:'Dirty Dash: dmg '+sc.mySum+' +debuff noC'})},
     onParry(sc){return fx({dmgOpp:1,log:'Dirty Dash parry: dmg 1'})},
     onLose(sc){return fx({log:'Dirty Dash lose: —'})}},
 
@@ -341,20 +341,20 @@ const SKILL_POOL = {
     onWin(sc){
       const mx=Math.max(...sc.myDice,0);
       const hits=sc.myDice.length;
-      return fx({dmgOpp:mx,statusOpp:{id:'bleed',potency:mx,count:hits},log:'Blood Rush: dmg '+mx+' +bleed '+mx+'p '+hits+'c'})},
-    onParry(sc){return fx({statusOpp:{id:'bleed',potency:1,count:1},log:'Blood Rush parry: bleed 1p 1c'})},
+      return fx({dmgOpp:mx,statusOpps:{id:'bleed',potency:mx,count:hits},log:'Blood Rush: dmg '+mx+' +bleed '+mx+'p '+hits+'c'})},
+    onParry(sc){return fx({statusOpps:{id:'bleed',potency:1,count:1},log:'Blood Rush parry: bleed 1p 1c'})},
     onLose(sc){return fx({log:'Blood Rush lose: —'})}},
 
   sandthrow:{id:'sandthrow',name:'Sand Throw',type:'B',
     desc:'onWin: debuff noA + noB รอบหน้า\nonParry: debuff noA\nonLose: —',
-    onWin(sc){return fx({statusOpp:{id:'locktype',potency:0,count:1,lockedType:'A'},statusOpp2:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Sand Throw: debuff noA+noB'})},
-    onParry(sc){return fx({statusOpp:{id:'locktype',potency:0,count:1,lockedType:'A'},log:'Sand Throw parry: debuff noA'})},
+    onWin(sc){return fx({statusOpps:[{id:'locktype',potency:0,count:1,lockedType:'A'},{id:'locktype',potency:0,count:1,lockedType:'B'}],log:'Sand Throw: debuff noA+noB'})},
+    onParry(sc){return fx({statusOpps:{id:'locktype',potency:0,count:1,lockedType:'A'},log:'Sand Throw parry: debuff noA'})},
     onLose(sc){return fx({log:'Sand Throw lose: —'})}},
 
   spitacid:{id:'spitacid',name:'Spit Acid',type:'B',
     desc:'onWin: debuff acid p=max number c=hits\nonParry: —\nonLose: —',
     onWin(sc){const mx = Math.max(...sc.myDice, 0);const hits = sc.myDice.length;// ← ต้องประกาศก่อน
-      return fx({statusOpp:{id:'acid',potency:mx,count:hits},log:'Spit Acid: '+mx+'p '+hits+'c'})},
+      return fx({statusOpps:{id:'acid',potency:mx,count:hits},log:'Spit Acid: '+mx+'p '+hits+'c'})},
     onParry(sc){return fx({log:'Spit Acid parry: —'})},
     onLose(sc){return fx({log:'Spit Acid lose: —'})}},
 
@@ -364,7 +364,7 @@ const SKILL_POOL = {
     desc:'onWin: heal=โยน×2\nonParry: dmg 1\nonLose: shield 3',
     onWin(sc){const h=sc.myRolls*2;return fx({healSelf:h,log:'Iron Guard: heal '+h})},
     onParry(sc){return fx({dmgOpp:1,log:'Iron Guard parry: dmg 1'})},
-    onLose(sc){return fx({statusSelf:{id:'shield',potency:3,count:2},log:'Iron Guard lose: shield 3 (2T)'})}},
+    onLose(sc){return fx({statusSelfs:{id:'shield',potency:3,count:2},log:'Iron Guard lose: shield 3 (2T)'})}},
 
   submission:{id:'submission',name:'Submission Hold',type:'C',
     desc:'onWin: dmg=เต๋า opp\nonParry: —\nonLose: heal=เต๋า opp÷2',
@@ -380,7 +380,7 @@ const SKILL_POOL = {
 
   engulf:{id:'engulf',name:'Engulf',type:'C',
     desc:'onWin: dmg=oppsumdice + regen 2p 2c',
-    onWin(sc){return fx({dmgOpp:sc.oppSum,statusSelf:{id:'regen',potency:2,count:2},log:'engulf: dmg=oppSum '+sc.oppSum +' +regen 2p 2c'})},
+    onWin(sc){return fx({dmgOpp:sc.oppSum,statusSelfs:{id:'regen',potency:2,count:2},log:'engulf: dmg=oppSum '+sc.oppSum +' +regen 2p 2c'})},
     onParry(sc){return fx({log:'Engulf: —'})},
     onLose(sc){return fx({log:'Engulf: —'})}},
 
@@ -390,19 +390,19 @@ const SKILL_POOL = {
     desc:'onWin: heal=mySum\nonParry: —\nonLose: buff mustwin รอบหน้า',
     onWin(sc){return fx({healSelf:sc.mySum,log:'Mend: heal '+sc.mySum})},
     onParry(sc){return fx({log:'Mend parry: —'})},
-    onLose(sc){return fx({statusSelf:{id:'mustwin',potency:1,count:1},log:'Mend lose: buff mustwin'})}},
+    onLose(sc){return fx({statusSelfs:{id:'mustwin',potency:1,count:1},log:'Mend lose: buff mustwin'})}},
 
   meditate:{id:'meditate',name:'Arcane Focus',type:'D',
     desc:'onWin: heal=โยน×3 + regen 2p 2c\nonParry: heal 1\nonLose: mustwin',
-    onWin(sc){const h=sc.myRolls*3;return fx({healSelf:h,statusSelf:{id:'regen',potency:2,count:2},log:'Arcane Focus: heal '+h+' +regen'})},
+    onWin(sc){const h=sc.myRolls*3;return fx({healSelf:h,statusSelfs:{id:'regen',potency:2,count:2},log:'Arcane Focus: heal '+h+' +regen'})},
     onParry(sc){return fx({healSelf:1,log:'Arcane Focus parry: heal 1'})},
-    onLose(sc){return fx({statusSelf:{id:'mustwin',potency:1,count:1},log:'Arcane Focus lose: mustwin'})}},
+    onLose(sc){return fx({statusSelfs:{id:'mustwin',potency:1,count:1},log:'Arcane Focus lose: mustwin'})}},
 
   wardingflame:{id:'wardingflame',name:'Warding Flame',type:'D',
     desc:'onWin: inflict burn opp (potency=เต๋าสูงสุด, count=2)\nonParry: burn 1p 1c\nonLose: mustwin + regen 1p 1c',
-    onWin(sc){const mx=Math.max(...sc.myDice,0);return fx({statusOpp:{id:'burn',potency:mx,count:2},log:'Warding Flame: burn '+mx+'p 2c'})},
-    onParry(sc){return fx({statusOpp:{id:'burn',potency:1,count:1},log:'Warding Flame parry: burn 1p 1c'})},
-    onLose(sc){return fx({statusSelf:{id:'mustwin',potency:1,count:1},statusSelf2:{id:'regen',potency:1,count:1},log:'Warding Flame lose: mustwin+regen'})}},
+    onWin(sc){const mx=Math.max(...sc.myDice,0);return fx({statusOpps:{id:'burn',potency:mx,count:2},log:'Warding Flame: burn '+mx+'p 2c'})},
+    onParry(sc){return fx({statusOpps:{id:'burn',potency:1,count:1},log:'Warding Flame parry: burn 1p 1c'})},
+    onLose(sc){return fx({statusSelfs:[{id:'mustwin',potency:1,count:1},{id:'regen',potency:1,count:1}],log:'Warding Flame lose: mustwin+regen'})}},
 
   acidsiphon: {id: 'acidsiphon',name: 'Acid Siphon',type: 'D',
   desc: 'onWin: ถ้า mySum>oppSum → dmg+heal=acid(p×c) แล้วล้าง acid opp\nonLose: ล้าง acid opp + mustwin รอบหน้า',
@@ -430,7 +430,7 @@ const SKILL_POOL = {
     const oppEnt = isPlayer ? G.e : G.p;
     const acid = oppEnt.statuses.find(s=>s.id==='acid');
     if(acid) acid.count=0;
-    return fx({statusSelf:{id:'mustwin',potency:1,count:1},
+    return fx({statusSelfs:{id:'mustwin',potency:1,count:1},
       log:'Acid Siphon lose: acid cleared + mustwin'});}},
 
   // ═══ TYPE S — SHOUT / KOAN ═══
@@ -1123,10 +1123,8 @@ function applyEffect(eff, my, opp, side, result){
   }
   if(eff.healSelf>0){my.hp=Math.min(my.maxHp,my.hp+eff.healSelf);addLog((side==='player'?'P':'E')+' heal '+eff.healSelf,'w')}
   if(eff.healOpp>0){opp.hp=Math.min(opp.maxHp,opp.hp+eff.healOpp);addLog((side==='player'?'P→E':'E→P')+' heal '+eff.healOpp,'w')}
-  if(eff.statusSelf)  applyStatus(my,  eff.statusSelf);
-  if(eff.statusSelf2) applyStatus(my,  eff.statusSelf2);
-  if(eff.statusOpp)   applyStatus(opp, eff.statusOpp);
-  if(eff.statusOpp2)  applyStatus(opp, eff.statusOpp2);
+  if(eff.statusSelfs){const a=Array.isArray(eff.statusSelfs)?eff.statusSelfs:[eff.statusSelfs];a.forEach(s=>applyStatus(my,s))}
+  if(eff.statusOpps){const a=Array.isArray(eff.statusOpps)?eff.statusOpps:[eff.statusOpps];a.forEach(s=>applyStatus(opp,s))}
   if(eff.log) addLog(eff.log, result==='W'?'w':result==='L'?'l':'p');
   updateFightUI();
 }
