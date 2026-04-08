@@ -118,7 +118,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .combat-lo-col{border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;background:var(--bg3)}
 .combat-lo-lbl{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
 #sk-tooltip-global{display:none;position:fixed;background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:11px;font-family:'Outfit',sans-serif;color:var(--muted);white-space:pre-line;line-height:1.5;max-width:220px;z-index:9999;pointer-events:none}
-#sk-tooltip-global{display:none;position:fixed;background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:11px;font-family:'Outfit',sans-serif;color:var(--muted);white-space:pre-line;line-height:1.5;max-width:220px;z-index:9999;pointer-events:none}
+
 </style>
 </head>
 <body>
@@ -290,7 +290,7 @@ const SKILL_POOL = {
     onWin(sc){return fx({dmgOpp:sc.mySum,statusOpps:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Slash: dmg '+sc.mySum+' +debuff noB'})},
     onParry(sc){return fx({dmgOpp:1,log:'Slash parry: dmg 1'})},
     onLose(sc){return fx({log:'Slash lose: —'})}},
-	
+
 /* ซ้ำซ้อกับสกิล slash แต่เก็บไว้ปรับปรุง
   quickslash:{id:'quickslash',name:'Quick Slash',type:'A',
     desc:'onWin: dmg=ผลรวมเต๋า+2\nonParry: dmg 2\nonLose: —',
@@ -378,11 +378,21 @@ const SKILL_POOL = {
     onParry(sc){return fx({dmgOpp:3,log:'Counter Stance parry: dmg 3'})},
     onLose(sc){const d=Math.floor(sc.mySum/2);return fx({dmgOpp:d,log:'Counter Stance lose: counter dmg '+d})}},
 
-  engulf:{id:'engulf',name:'Engulf',type:'C',
-    desc:'onWin: dmg=oppsumdice + regen 2p 2c',
-    onWin(sc){return fx({dmgOpp:sc.oppSum,statusSelfs:{id:'regen',potency:2,count:2},log:'engulf: dmg=oppSum '+sc.oppSum +' +regen 2p 2c'})},
-    onParry(sc){return fx({log:'Engulf: —'})},
-    onLose(sc){return fx({log:'Engulf: —'})}},
+engulf:{id:'engulf',name:'Engulf',type:'C',
+  desc:'onWin: mySum>oppSum → dmg+heal=acid(p×c) ล้าง acid\n       mySum≤oppSum → heal=acid(p×c) ล้าง acid\nonLose: opp acid oppHitDice p/c',
+  onWin(sc){
+    const acid=sc.oppEnt.statuses.find(s=>s.id==='acid');
+    const val=acid?acid.potency*acid.count:0;
+    if(acid) acid.count=0;
+    if(sc.mySum>sc.oppSum)
+      return fx({dmgOpp:val,healSelf:val,log:'Engulf win: dmg+heal '+val+', acid cleared'});
+    return fx({healSelf:val,log:'Engulf win: heal '+val+', acid cleared'});
+  },
+  onParry(sc){return fx({log:'Engulf parry: —'})},
+  onLose(sc){
+    return fx({
+      statusOpps:{id:'acid',potency:sc.oppHitDice,count:sc.oppHitDice},
+      log:'Engulf lose: opp acid '+sc.oppHitDice+'p '+sc.oppHitDice+'c'});}},
 
   // ═══ TYPE D — ARCANE ═══
   // ร่ายเวท บัพ buff เพื่อเทินหน้า onLose ได้ mustwin
@@ -404,35 +414,18 @@ const SKILL_POOL = {
     onParry(sc){return fx({statusOpps:{id:'burn',potency:1,count:1},log:'Warding Flame parry: burn 1p 1c'})},
     onLose(sc){return fx({statusSelfs:[{id:'mustwin',potency:1,count:1},{id:'regen',potency:1,count:1}],log:'Warding Flame lose: mustwin+regen'})}},
 
-  acidsiphon: {id: 'acidsiphon',name: 'Acid Siphon',type: 'D',
-  desc: 'onWin: ถ้า mySum>oppSum → dmg+heal=acid(p×c) แล้วล้าง acid opp\nonLose: ล้าง acid opp + mustwin รอบหน้า',
+  acidsiphon:{id:'acidsiphon',name:'Acid Siphon',type:'D',
+    desc:'onWin: regen p/c = opp acid p/c แล้วล้าง acid opp\nonLose: mustwin',
     onWin(sc){
-    // ดึง acid status จาก opp entity ตรงๆ
-    const isPlayer = sc.myDice === G.pDice;
-    const oppEnt = isPlayer ? G.e : G.p;
-    const acid = oppEnt.statuses.find(s=>s.id==='acid');
-
-    if(sc.mySum > sc.oppSum && acid){
-      const val = acid.potency * acid.count;
-      // ล้าง acid โดยตั้ง count=0 ให้ cleanStatuses จัดการ
-      acid.count = 0;
-      return fx({dmgOpp:val, healSelf:val,
-        log:'Acid Siphon: siphon '+val+' dmg+heal, acid cleared'});
-    } else if(acid){
-      acid.count = 0;
-      return fx({log:'Acid Siphon: win but mySum≤oppSum, acid cleared only'});
-    }
-    return fx({log:'Acid Siphon: win, no acid on opp'});
-  },
-  onParry(sc){return fx({log:'Acid Siphon parry: —'})},
-  onLose(sc){
-    const isPlayer = sc.myDice === G.pDice;
-    const oppEnt = isPlayer ? G.e : G.p;
-    const acid = oppEnt.statuses.find(s=>s.id==='acid');
-    if(acid) acid.count=0;
-    return fx({statusSelfs:{id:'mustwin',potency:1,count:1},
-      log:'Acid Siphon lose: acid cleared + mustwin'});}},
-
+      const acid=sc.oppEnt.statuses.find(s=>s.id==='acid');
+      if(!acid) return fx({log:'Acid Siphon: no acid on opp'});
+      const p=acid.potency, c=acid.count;
+      acid.count=0;
+      return fx({
+        statusSelfs:{id:'regen',potency:p,count:c},
+        log:'Acid Siphon: regen '+p+'p '+c+'c, acid cleared'});},
+    onParry(sc){return fx({log:'Acid Siphon parry: —'})},
+    onLose(sc){return fx({statusSelfs:{id:'mustwin',potency:1,count:1},log:'Acid Siphon lose: mustwin'})}},
   // ═══ TYPE S — SHOUT / KOAN ═══
   // บทลงโทษจากความโลภ ไม่มีผล หรือ combo setup หรือ บวกมาก=ลบมาก
   nothing:{id:'nothing',name:'"So be it."',type:'S',
@@ -446,7 +439,18 @@ const SKILL_POOL = {
     onWin(sc){return fx({healSelf:3,log:'"Empty your cup." — heal 3'})},
     onParry(sc){return fx({log:'"Empty your cup." — steady'})},
     onLose(sc){return fx({dmgSelf:5,log:'"Empty your cup." — lose control, dmg 5 self'})}},
-};
+
+  scattered:{id:'scattered',name:'"Scattered."',type:'S',
+    desc:'onWin: self acid 1p 2c, opp acid 1p 1c',
+    onWin(sc){return fx({statusSelfs:{id:'acid',potency:1,count:2},
+      statusOpps:{id:'acid',potency:1,count:1},
+      log:'"Scattered." — acid spreads both ways'})},
+  onParry(sc){return fx({log:'"Scattered." — nothing'})},
+  onLose(sc){return fx({log:'"Scattered." — nothing'})}},
+
+
+
+};//อันนี้ ปิด skill_pool
 
 // ── PASSIVE POOL ────────────────────────────────────────
 // passive ทำงานทั้ง player และ enemy เหมือนกัน
@@ -473,8 +477,7 @@ const PASSIVE_POOL = {
   ironskin:{id:'ironskin',name:'iron skin',
     desc:'hp<50% → ลด dmg ที่รับ 1',
     damageReduction(entity){
-      return entity.hp < entity.maxHp/2 ? 1 : 0;
-    }},
+      return entity.hp < entity.maxHp/2 ? 1 : 0;}},
 
   momentum:{id:'momentum',name:'momentum',
     desc:'ชนะรอบก่อน → dmg +2 รอบนี้',
@@ -484,9 +487,17 @@ const PASSIVE_POOL = {
     desc:'ทุกครั้งโดน dmg คืน 1 ให้ศัตรู',
     onTakeDmg(ctx, myEntity, oppEntity){
       oppEntity.hp=Math.max(0,oppEntity.hp-1);
-      ctx.log('thorns: reflect 1','info');
-    }},
-};
+      ctx.log('thorns: reflect 1','info');}},
+
+    acidblood:{id:'acidblood',name:'Acid Blood',
+  desc:'แพ้ clash → inflict acid 1p 1c ให้ฝั่งตรงข้าม',
+  afterClash(result, ctx, myEntity, oppEntity){
+    if(result!=='L') return;
+    applyStatus(oppEntity,{id:'acid',potency:1,count:1});
+    ctx.log('Acid Blood: lose → acid 1p 1c on opp','info');}},
+
+
+};// ปิด passive
 
 // ── STATUS POOL ─────────────────────────────────────────
 // แต่ละ status มี hooks object { turnStart, turnEnd, onClashReveal }
@@ -498,19 +509,15 @@ const STATUS_POOL = {
 
   // ── buffs ──────────────────────────────────────────────
 
-  regen:{id:'regen',name:'regen',priority:10,color:'buff',
+  regen:{id:'regen',name:'regen',priority:10,statusType:'buff',tags:['heal'],
     desc:'turnStart: heal=potency, count-1',
     hooks:{
       turnStart(entity,s,ctx){
         ctx.healEntity(entity,s.potency);
         ctx.log('[regen] heal '+s.potency,'w');
-        s.count--;
-      }
-    }},
+        s.count--;}}},
 
-  // shield: _shieldHp คือ HP พิเศษที่นับแยก ไม่แตะ maxHp จริง
-  // hpDisplay อ่าน _shieldHp แล้วแสดงเป็นแถบสีขาวต่อจาก HP ปกติ
-  shield:{id:'shield',name:'shield',priority:15,color:'buff',
+  shield:{id:'shield',name:'shield',priority:15,statusType:'buff',tags:['defense'],
     desc:'เพิ่ม shield HP=potency (แสดงสีขาว)\nturnEnd: count-1 ถ้า=0 ลบ shield',
     hooks:{
       turnStart(entity,s,ctx){
@@ -518,24 +525,21 @@ const STATUS_POOL = {
           s._applied=true;
           entity._shieldHp=(entity._shieldHp||0)+s.potency;
           ctx.log('[shield] +'+s.potency+' shield HP','w');
-        }
-      },
+        }},
       turnEnd(entity,s,ctx){
         s.count--;
         if(s.count<=0){
           entity._shieldHp=0;
           ctx.log('[shield] expired','info');
-        }
-      }
-    }},
+        }}}},
 
-  haste:{id:'haste',name:'haste',priority:20,color:'buff',
+  haste:{id:'haste',name:'haste',priority:20,statusType:'buff',tags:['speed'],
     desc:'speed+potency (อ่านใน calcSpd)\nturnEnd: count-1',
     hooks:{
-      turnEnd(entity,s,ctx){ s.count--; }
-    }},
+      turnEnd(entity,s,ctx){ s.count--;
+      }}},
 
-  mustwin:{id:'mustwin',name:'must win',priority:1,color:'buff',
+  mustwin:{id:'mustwin',name:'must win',priority:1,statusType:'buff',tags:['combat'],
     desc:'onClashReveal: เปลี่ยนผลตัวเองเป็น W (ออก WW WL WP ได้)',
     hooks:{
       onClashReveal(entity,s,ctx){
@@ -543,37 +547,37 @@ const STATUS_POOL = {
         else ctx.overrideResult('e','W');
         ctx.log('[mustwin] ผล W!','w');
         s.count--;
-      }
-    }},
+      }}},
 
-  // rage — สะสม potency, ไม่มี auto hook, passive battlerage จัดการเอง
-  rage:{id:'rage',name:'rage',priority:99,color:'buff',
+  // rage — permanent_buff เพราะ passive battlerage จัดการเอง ลบด้วย cleanse ทั่วไปไม่ได้
+  rage:{id:'rage',name:'rage',priority:99,statusType:'permanent_buff',tags:['combat'],
     desc:'[manual] สะสม potency — passive battlerage trigger เอง',
     hooks:{}},
 
+
   // ── debuffs ────────────────────────────────────────────
 
-  burn:{id:'burn',name:'burn',priority:30,color:'debuff',
+
+
+  burn:{id:'burn',name:'burn',priority:30,statusType:'debuff',tags:['fire','dot'],
     desc:'turnEnd: dmg=potency, count-1',
     hooks:{
       turnEnd(entity,s,ctx){
         ctx.dealEntity(entity,s.potency);
         ctx.log('[burn] dmg '+s.potency,'l');
         s.count--;
-      }
-    }},
+      }}},
 
-  acid:{id:'acid',name:'acid',priority:31,color:'debuff',
+  acid:{id:'acid',name:'acid',priority:31,statusType:'debuff',tags:['poison','dot'],
     desc:'turnEnd: dmg=potency, count-1',
     hooks:{
       turnEnd(entity,s,ctx){
         ctx.dealEntity(entity,s.potency);
         ctx.log('[acid] dmg '+s.potency,'l');
         s.count--;
-      }
-    }},
+      }}},
 
-  bleed:{id:'bleed',name:'bleed',priority:40,color:'debuff',
+  bleed:{id:'bleed',name:'bleed',priority:40,statusType:'debuff',tags:['bleed','dot'],
     desc:'turnEnd: dmg=potency×hitDice, count-=hitDice',
     hooks:{
       turnEnd(entity,s,ctx){
@@ -585,18 +589,17 @@ const STATUS_POOL = {
         ctx.dealEntity(entity,dmg);
         ctx.log('[bleed] '+s.potency+'x'+actualHits+'='+dmg,'l');
         s.count-=actualHits;
-      }
-    }},
+      }}},
 
-  // locktype: ห้ามใช้ type ใน .lockedType — onClashReveal: count-1
-  locktype:{id:'locktype',name:'lock',priority:99,color:'debuff',
+  locktype:{id:'locktype',name:'lock',priority:99,statusType:'debuff',tags:['lock'],
     desc:'ห้ามใช้ type ใน .lockedType\nonClashReveal: count-1',
     hooks:{
-      onClashReveal(entity,s,ctx){ s.count--; }
-    }},
+      onClashReveal(entity,s,ctx){ s.count--;
+      }}},
 
   // ── เพิ่ม status ใหม่ได้ตรงนี้เลย ──
 };
+
 
 // ── COMBO POOL ──────────────────────────────────────────
 // ctx.side = 'player'|'enemy'
@@ -604,52 +607,74 @@ const STATUS_POOL = {
 // ctx.healSelf(amount) — heal ฝั่งตัวเอง
 // ctx.G — game state
 const COMBO_POOL = {
+
   doublestrike:{id:'doublestrike',name:'double strike',
     pattern:[{type:'A',result:'*'},{type:'A',result:'W'}],
     desc:'A* → AW → deal 8',
     effect(ctx){ctx.dealOpp(8);ctx.log('combo double strike: dmg 8','combo')}},
+
   riposte:{id:'riposte',name:'riposte',
     pattern:[{type:'C',result:'W'},{type:'A',result:'W'}],
     desc:'CW → AW → deal 6 + heal 3',
     effect(ctx){ctx.dealOpp(6);ctx.healSelf(3);ctx.log('combo riposte: dmg 6 heal 3','combo')}},
+
   fullcounter:{id:'fullcounter',name:'full counter',
     pattern:[{type:'C',result:'W'},{type:'C',result:'W'},{type:'C',result:'W'}],
     desc:'CW×3 → heal 12',
     effect(ctx){ctx.healSelf(12);ctx.log('combo full counter: heal 12','combo')}},
+
   luckystrike:{id:'luckystrike',name:'lucky strike',
     pattern:[{type:'D',result:'W'},{type:'A',result:'W'}],
     desc:'DW → AW → deal 10',
     effect(ctx){ctx.dealOpp(10);ctx.log('combo lucky strike: dmg 10','combo')}},
+
   rally:{id:'rally',name:'rally',
     pattern:[{type:'D',result:'L'},{type:'D',result:'W'}],
-    desc:'DL → DW → heal 8 + ลบ debuff',
+    desc:'DL → DW → heal 5 + ลบ debuff',
     effect(ctx){
-      ctx.healSelf(8);
-      if(ctx.side==='player') ctx.G.p.buffs={};
-      else ctx.G.e.buffs={};
-      ctx.log('combo rally: heal 8 + ลบ debuff','combo');
-    }},
+    ctx.healSelf(5);
+    const target = ctx.side==='player' ? ctx.G.p : ctx.G.e;
+    removeStatuses(target, { statusType:'debuff' });
+    ctx.log('combo rally: heal 5 + ลบ debuff','combo');}},
+
   bladerush:{id:'bladerush',name:'blade rush',
     pattern:[{type:'A',result:'*'},{type:'A',result:'*'},{type:'A',result:'W'}],
     desc:'A* → A* → AW → deal 15',
     effect(ctx){ctx.dealOpp(15);ctx.log('combo blade rush: dmg 15','combo')}},
+
   ironwall:{id:'ironwall',name:'iron wall',
     pattern:[{type:'C',result:'W'},{type:'C',result:'W'}],
     desc:'CW×2 → heal 6',
     effect(ctx){ctx.healSelf(6);ctx.log('combo iron wall: heal 6','combo')}},
+
   desperation:{id:'desperation',name:'desperation',
     pattern:[{type:'D',result:'L'},{type:'D',result:'L'},{type:'A',result:'W'}],
     desc:'DL×2 → AW → deal 12',
     effect(ctx){ctx.dealOpp(12);ctx.log('combo desperation: dmg 12','combo')}},
+
   bursttide:{id:'bursttide',name:'burst tide',
     pattern:[{type:'B',result:'W'},{type:'B',result:'W'}],
     desc:'BW×2 → deal 10',
     effect(ctx){ctx.dealOpp(10);ctx.log('combo burst tide: dmg 10','combo')}},
+
   zenflow:{id:'zenflow',name:'zen flow',
     pattern:[{type:'D',result:'W'},{type:'C',result:'W'},{type:'D',result:'W'}],
     desc:'DW → CW → DW → heal 15',
     effect(ctx){ctx.healSelf(15);ctx.log('combo zen flow: heal 15','combo')}},
-};
+
+  acidrush:{id:'acidrush',name:'Acid Rush',
+    pattern:[{type:'C',result:'L'},{type:'A',result:'*'}],
+    desc:'CL → A* → inflict acid potency=maxdice, count=dicecount',
+    effect(ctx){
+      const pMax=Math.max(...ctx.G.pDice);
+      const pCount=ctx.G.pDice.length;
+      const target=ctx.side==='player'?ctx.G.e:ctx.G.p;
+    applyStatus(target,{id:'acid',potency:pMax,count:pCount});
+    ctx.log('combo acid rush: acid '+pMax+'p '+pCount+'c','combo');
+  }},
+
+
+};// ปิด combo_pool
 
 // ── ENEMY POOL ──────────────────────────────────────────
 // skills: {A, B, C, D, S} — id ชี้ไปที่ SKILL_POOL (ใช้ pool เดียวกัน)
@@ -659,8 +684,8 @@ const COMBO_POOL = {
 
 const ENEMY_POOL = {
   slime:{id:'slime',name:'SLIME',hp:55,
-    skills:{A:'bodyslam',B:'spitacid',C:'engulf',D:'acidsiphon',S:'nothing'},
-    passives:['momentum'],combos:['doublestrike'],rollStyle:'aggro'},
+    skills:{A:'bodyslam',B:'spitacid',C:'engulf',D:'acidsiphon',S:'scattered'},
+    passives:['momentum','acidblood'],combos:['doublestrike','acidrush'],rollStyle:'aggro'},
   goblin:{id:'goblin',name:'GOBLIN',hp:60,
     skills:{A:'quickslash',B:'dash',C:'counter',D:'heal',S:'nothing'},
     passives:['momentum'],combos:['doublestrike'],rollStyle:'safe'},
@@ -1043,8 +1068,8 @@ function doClash(){
   const eSpd=calcSpd(G.e, en.passives, eSum, G.eRolls);
 
   // skill context — my=self, opp=opponent, symmetric
-  const pSC={myDice:G.pDice,oppDice:G.eDice,myRolls:G.pRolls,oppRolls:G.eRolls,mySum:pSum,oppSum:eSum,mySpd:pSpd,oppSpd:eSpd};
-  const eSC={myDice:G.eDice,oppDice:G.pDice,myRolls:G.eRolls,oppRolls:G.pRolls,mySum:eSum,oppSum:pSum,mySpd:eSpd,oppSpd:pSpd};
+const pSC={myDice:G.pDice,oppDice:G.eDice,myRolls:G.pRolls,oppRolls:G.eRolls,mySum:pSum,oppSum:eSum,mySpd:pSpd,oppSpd:eSpd,myHitDice:G.pDice.length,oppHitDice:G.eDice.length,myMaxDie:Math.max(...G.pDice),oppMaxDie:Math.max(...G.eDice),myEnt:G.p,oppEnt:G.e};
+const eSC={myDice:G.eDice,oppDice:G.pDice,myRolls:G.eRolls,oppRolls:G.pRolls,mySum:eSum,oppSum:pSum,mySpd:eSpd,oppSpd:pSpd,myHitDice:G.eDice.length,oppHitDice:G.pDice.length,myMaxDie:Math.max(...G.eDice),oppMaxDie:Math.max(...G.pDice),myEnt:G.e,oppEnt:G.p};
 
   triggerStatuses('onClashReveal');
 
@@ -1162,22 +1187,19 @@ function makeDummyCtx(){
     G,
     deal(target,amount){if(target==='enemy')G.e.hp=Math.max(0,G.e.hp-amount);else G.p.hp=Math.max(0,G.p.hp-amount)},
     heal(target,amount){if(target==='player')G.p.hp=Math.min(G.p.maxHp,G.p.hp+amount);else G.e.hp=Math.min(G.e.maxHp,G.e.hp+amount)},
+    dealEntity(entity,amount){entity.hp=Math.max(0,entity.hp-amount)},
+    healEntity(entity,amount){entity.hp=Math.min(entity.maxHp,entity.hp+amount)},
+    overrideResult(side,val){if(!G.resultOverride)G.resultOverride={};G.resultOverride[side]=val},
     log:addLog,
   };
 }
 
 function triggerStatuses(timing){
   const ctx=makeDummyCtx();
-  ctx.dealEntity=(entity,amount)=>{entity.hp=Math.max(0,entity.hp-amount)};
-  ctx.healEntity=(entity,amount)=>{entity.hp=Math.min(entity.maxHp,entity.hp+amount)};
-  ctx.overrideResult=(side,val)=>{
-    if(!G.resultOverride) G.resultOverride={};
-    G.resultOverride[side]=val;
-  };
   const all=[...G.p.statuses.map(s=>({entity:G.p,s})),...G.e.statuses.map(s=>({entity:G.e,s}))]
     .sort((a,b)=>(STATUS_POOL[a.s.id]?.priority||99)-(STATUS_POOL[b.s.id]?.priority||99));
   for(const {entity,s} of all){
-    if(s.count<=0) continue;                         // เช็ค count ก่อน trigger
+    if(s.count<=0) continue;
     const def=STATUS_POOL[s.id];
     if(!def||!def.hooks) continue;
     const hook=def.hooks[timing];
@@ -1188,6 +1210,19 @@ function triggerStatuses(timing){
   }
 }
 function cleanStatuses(){G.p.statuses=G.p.statuses.filter(s=>s.count>0);G.e.statuses=G.e.statuses.filter(s=>s.count>0)}
+
+function removeStatuses(entity, filter){
+  const before = entity.statuses.length;
+  entity.statuses = entity.statuses.filter(s => {
+    const def = STATUS_POOL[s.id];
+    if(!def) return true;
+    const matchType = !filter.statusType || def.statusType === filter.statusType;
+    const matchTag  = !filter.tags      || filter.tags.some(t => (def.tags||[]).includes(t));
+    return !(matchType && matchTag);
+  });
+  const removed = before - entity.statuses.length;
+  if(removed > 0) addLog('[cleanse] ลบ '+removed+' status','w');
+}
 
 // checkCombos(chain, comboIds, myEntity, oppEntity, side)
 function checkCombos(chain, comboIds, myEnt, oppEnt, side){
@@ -1258,7 +1293,7 @@ function updateFightUI(){
       if(s.id==='locktype'){
         tags.push('<span class="stag stag-debuff">no '+s.lockedType+' ('+s.count+'T)</span>');
       } else {
-        const col=def?.color==='buff'?'stag-buff':'stag-debuff';
+        const col = def?.statusType === 'buff' || def?.statusType === 'permanent_buff' ? 'stag-buff' : 'stag-debuff';
         const label=def?def.name:s.id;
         const val=s.id==='rage'?s.potency+'/3':s.potency+'p '+s.count+'c';
         tags.push('<span class="stag '+col+'">'+label+' '+val+'</span>');
