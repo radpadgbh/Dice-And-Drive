@@ -286,7 +286,17 @@ const SKILL_POOL = {
   // ═══ TYPE A — AGGRESSIVE ═══
   // เน้นดาเมจมีเงื่อนไข ถ้าไม่เข้าเงื่อนไข ดาเมจเบา
 
-
+  clawstrike:{id:'clawstrike',name:'Claw Strike',type:'A',
+    desc:'onWin: hitDice=4 → dmg maxDie×4, else dmg 4\nonParry: hitDice=4 → dmg maxDie×4 + self dmg 4, else dmg 4 + self dmg 4\nonLose: hitDice=4 → dmg 4',
+    onWin(sc){
+      if(sc.myHitDice===4) return fx({dmgOpp:sc.myMaxDie*4,log:'Claw Strike win: dmg '+sc.myMaxDie*4});
+      return fx({dmgOpp:4,log:'Claw Strike win: dmg 4'});},
+    onParry(sc){
+      if(sc.myHitDice===4) return fx({dmgOpp:sc.myMaxDie*4,dmgSelf:4,log:'Claw Strike parry: dmg '+sc.myMaxDie*4+' self 4'});
+      return fx({dmgOpp:4,dmgSelf:4,log:'Claw Strike parry: dmg 4 self 4'});},
+    onLose(sc){
+      if(sc.myHitDice===4) return fx({dmgOpp:4,log:'Claw Strike lose: dmg 4'});
+      return fx({log:'Claw Strike lose: —'});}},
 
   slash:{id:'slash',name:'Slash',type:'A',
     desc:'onWin: dmg=ผลรวมเต๋า + debuff noB\nonParry: dmg 1\nonLose: —',
@@ -333,6 +343,15 @@ const SKILL_POOL = {
     onParry(sc){return fx({dmgOpp:1,log:'Dirty Dash parry: dmg 1'})},
     onLose(sc){return fx({log:'Dirty Dash lose: —'})}},
 
+  ambush:{id:'ambush',name:'Ambush',type:'B',
+    desc:'onWin: dmg=|oppSum-mySum|×(myHitDice+oppHitDice)',
+    onWin(sc){
+    const diff=Math.abs(sc.oppSum-sc.mySum);
+    const dmg=diff*(sc.myHitDice+sc.oppHitDice);
+    return fx({dmgOpp:dmg,log:'Ambush win: dmg '+dmg});},
+    onParry(sc){return fx({log:'Ambush parry: —'})},
+    onLose(sc){return fx({log:'Ambush lose: —'})}},
+
   heavyhit:{id:'heavyhit',name:'Sucker Punch',type:'B',
     desc:'onWin: dmg=ผลรวมเต๋า×1.5\nonParry: —\nonLose: dmg 2 ตัวเอง',
     onWin(sc){const d=Math.floor(sc.mySum*1.5);return fx({dmgOpp:d,log:'Sucker Punch: dmg '+d})},
@@ -368,6 +387,20 @@ const SKILL_POOL = {
     onWin(sc){const h=sc.myRolls*2;return fx({healSelf:h,log:'Iron Guard: heal '+h})},
     onParry(sc){return fx({dmgOpp:1,log:'Iron Guard parry: dmg 1'})},
     onLose(sc){return fx({statusSelfs:{id:'shield',potency:3,count:2},log:'Iron Guard lose: shield 3 (2T)'})}},
+
+  dodge:{id:'dodge',name:'Dodge',type:'C',
+    desc:'onWin: regen maxDie p / hitDice c + lock opp A 1T\nonLose: regen minDie p / hitDice c',
+    onWin(sc){
+    return fx({
+      statusSelfs:{id:'regen',potency:sc.myMaxDie,count:sc.myHitDice},
+      statusOpps:{id:'locktype',potency:0,count:1,lockedType:'A'},
+      log:'Dodge win: regen '+sc.myMaxDie+'p '+sc.myHitDice+'c + lock opp A 1T'});},
+    onParry(sc){return fx({log:'Dodge parry: —'})},
+    onLose(sc){
+    const minDie=Math.min(...sc.myDice);
+    return fx({
+      statusSelfs:{id:'regen',potency:minDie,count:1},
+      log:'Dodge lose: regen '+minDie+'p '+sc.myHitDice+'c'});}},
 
   submission:{id:'submission',name:'Submission Hold',type:'C',
     desc:'onWin: dmg=เต๋า opp\nonParry: —\nonLose: heal=เต๋า opp÷2',
@@ -691,7 +724,7 @@ const ENEMY_POOL = {
     passives:['acidblood'],combos:['acidrush'],rollStyle:'aggro'},
 
   goblin:{id:'goblin',name:'GOBLIN',hp:60,
-    skills:{A:'quickslash',B:'dash',C:'counter',D:'heal',S:'nothing'},
+    skills:{A:'clawstrike',B:'dash',C:'counter',D:'heal',S:'nothing'},
     passives:['momentum'],combos:['doublestrike'],rollStyle:'safe'},
 
   zombie:{id:'zombie',name:'ZOMBIE',hp:120,
@@ -707,7 +740,7 @@ const ENEMY_POOL = {
     passives:['battlerage'],combos:['bladerush','doublestrike'],rollStyle:'normal'},
 
   vampire:{id:'vampire',name:'VAMPIRE',hp:45,
-    skills:{A:'slash',B:'bloodrush',C:'counter',D:'wardingflame',S:'nothing'},
+    skills:{A:'clawstrike',B:'bloodrush',C:'counter',D:'wardingflame',S:'nothing'},
     passives:['thorns'],combos:['riposte','zenflow'],rollStyle:'normal'},
 };
 
@@ -916,6 +949,7 @@ function beginTurn(){
   document.getElementById('roll-turn-lbl').textContent='round '+G.turn+' — phase 1: roll';
   document.getElementById('roll-hint').textContent='';
   triggerStatuses('turnStart');
+  cleanStatuses();
   updateFightUI();
   addLog('─── รอบ '+G.turn+' ───','info');
   checkDeath();
