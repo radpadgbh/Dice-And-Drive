@@ -655,26 +655,27 @@ const COMBO_POOL = {
 // skills: {A, B, C, D, S} — id ชี้ไปที่ SKILL_POOL (ใช้ pool เดียวกัน)
 // passives/combos: id ชี้ไปที่ PASSIVE_POOL / COMBO_POOL
 // aiPick(lockedType, eChain) → type string
-// tier: 1=easy, 2=mid, 3=hard
+// roll: nromal, safe, aggro
+
 const ENEMY_POOL = {
   slime:{id:'slime',name:'SLIME',hp:55,
     skills:{A:'bodyslam',B:'spitacid',C:'engulf',D:'acidsiphon',S:'nothing'},
-    passives:[],combos:[]},
+    passives:['momentum'],combos:['doublestrike'],rollStyle:'aggro'},
   goblin:{id:'goblin',name:'GOBLIN',hp:60,
     skills:{A:'quickslash',B:'dash',C:'counter',D:'heal',S:'nothing'},
-    passives:['momentum'],combos:['doublestrike']},
+    passives:['momentum'],combos:['doublestrike'],rollStyle:'safe'},
   zombie:{id:'zombie',name:'ZOMBIE',hp:80,
     skills:{A:'slash',B:'heavyhit',C:'block',D:'meditate',S:'nothing'},
-    passives:['ironskin'],combos:['ironwall']},
+    passives:['ironskin'],combos:['ironwall'],rollStyle:'normal'},
   irongolem:{id:'irongolem',name:'IRON GOLEM',hp:100,
     skills:{A:'heavyhit',B:'dash',C:'block',D:'meditate',S:'nothing'},
-    passives:['ironskin'],combos:['fullcounter','ironwall']},
+    passives:['ironskin'],combos:['fullcounter','ironwall'],rollStyle:'normal'},
   darkknight:{id:'darkknight',name:'DARK KNIGHT',hp:90,
     skills:{A:'onecut',B:'bloodrush',C:'submission',D:'heal',S:'nothing'},
-    passives:['battlerage'],combos:['bladerush','doublestrike']},
+    passives:['battlerage'],combos:['bladerush','doublestrike'],rollStyle:'normal'},
   vampire:{id:'vampire',name:'VAMPIRE',hp:75,
     skills:{A:'slash',B:'sandthrow',C:'counter',D:'wardingflame',S:'nothing'},
-    passives:['thorns'],combos:['riposte','zenflow']},
+    passives:['thorns'],combos:['riposte','zenflow'],rollStyle:'normal'},
 };
 
 // enemy AI — random จาก A B C D (ไม่เลือก S ยกเว้นเกิน 11)
@@ -922,13 +923,26 @@ function calcSpd(entity, passiveIds, diceSum, rollCount){
   return diceSum+rollCount+b;
 }
 
+function eRollSafe(){
+  do{const v=Math.floor(Math.random()*6)+1;G.eDice.push(v);G.eRolls++;
+  if(G.eDice.reduce((a,b)=>a+b,0)>=12)break;}
+  while(G.eDice.reduce((a,b)=>a+b,0)<5);
+}
+function eRollAggro(){
+  do{const v=Math.floor(Math.random()*6)+1;G.eDice.push(v);G.eRolls++;
+  if(G.eDice.reduce((a,b)=>a+b,0)>=12)break;}
+  while(G.eDice.reduce((a,b)=>a+b,0)<9);
+}
+function eRollNormal(){
+  do{const v=Math.floor(Math.random()*6)+1;G.eDice.push(v);G.eRolls++;
+  if(G.eDice.reduce((a,b)=>a+b,0)>=12)break;}
+  while(G.eDice.reduce((a,b)=>a+b,0)<8);
+}
 function enemyRoll(){
-  const cnt=Math.floor(Math.random()*3)+1;
-  for(let i=0;i<cnt;i++){
-    const v=Math.floor(Math.random()*6)+1;
-    G.eDice.push(v);G.eRolls++;
-    if(G.eDice.reduce((a,b)=>a+b,0)>=10)break;
-  }
+  const style=ENEMY_POOL[G.currentEnemyId].rollStyle||'normal';
+  if(style==='safe') eRollSafe();
+  else if(style==='aggro') eRollAggro();
+  else eRollNormal();
   const eSum=G.eDice.reduce((a,b)=>a+b,0);
   document.getElementById('e-dice').innerHTML=G.eDice.map(d=>`<span class="die${d===1?' one':''}">${d}</span>`).join('');
   document.getElementById('e-sum').textContent=eSum;
