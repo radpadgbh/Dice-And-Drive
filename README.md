@@ -9,7 +9,7 @@ Game Dice And Drive Demo
 ## Core Rules
 Player \ Enemy	A (Attack)	B (Break)	C (Counter)	D (Utility)	S (Stance)
 A (Attack)	    PP	        WL	      LW	        WL	        WW
-B (Break)	     LW	        PP	      WL          WL	        WW
+B (Break)       LW	        PP	      WL          WL	        WW
 C (Counter)    	WL	        LW       	LL        	LW	        LW
 D (Utility)	    LW	        LW	      WL        	WW	        WW
 S (Stance)    	WW        	WW      	WW        	WW        	WW
