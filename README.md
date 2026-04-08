@@ -13,3 +13,4 @@ B (Break)	      LW	        PP	      WL          WL	        WW
 C (Counter)    	WL	        LW       	LL        	LW	        LW
 D (Utility)	    LW	        LW	      WL        	WW	        WW
 S (Stance)    	WW        	WW      	WW        	WW        	WW
+
