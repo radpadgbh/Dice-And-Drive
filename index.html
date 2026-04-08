@@ -285,6 +285,9 @@ function fx(o){return Object.assign({dmgOpp:0,dmgSelf:0,healSelf:0,healOpp:0,sta
 const SKILL_POOL = {
   // ═══ TYPE A — AGGRESSIVE ═══
   // เน้นดาเมจมีเงื่อนไข ถ้าไม่เข้าเงื่อนไข ดาเมจเบา
+
+
+
   slash:{id:'slash',name:'Slash',type:'A',
     desc:'onWin: dmg=ผลรวมเต๋า + debuff noB\nonParry: dmg 1\nonLose: —',
     onWin(sc){return fx({dmgOpp:sc.mySum,statusOpps:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Slash: dmg '+sc.mySum+' +debuff noB'})},
@@ -683,23 +686,28 @@ const COMBO_POOL = {
 // roll: nromal, safe, aggro
 
 const ENEMY_POOL = {
-  slime:{id:'slime',name:'SLIME',hp:55,
+  slime:{id:'slime',name:'SLIME',hp:65,
     skills:{A:'bodyslam',B:'spitacid',C:'engulf',D:'acidsiphon',S:'scattered'},
-    passives:['momentum','acidblood'],combos:['doublestrike','acidrush'],rollStyle:'aggro'},
+    passives:['acidblood'],combos:['acidrush'],rollStyle:'aggro'},
+
   goblin:{id:'goblin',name:'GOBLIN',hp:60,
     skills:{A:'quickslash',B:'dash',C:'counter',D:'heal',S:'nothing'},
     passives:['momentum'],combos:['doublestrike'],rollStyle:'safe'},
-  zombie:{id:'zombie',name:'ZOMBIE',hp:80,
+
+  zombie:{id:'zombie',name:'ZOMBIE',hp:120,
     skills:{A:'slash',B:'heavyhit',C:'block',D:'meditate',S:'nothing'},
     passives:['ironskin'],combos:['ironwall'],rollStyle:'normal'},
+
   irongolem:{id:'irongolem',name:'IRON GOLEM',hp:100,
     skills:{A:'heavyhit',B:'dash',C:'block',D:'meditate',S:'nothing'},
     passives:['ironskin'],combos:['fullcounter','ironwall'],rollStyle:'normal'},
+
   darkknight:{id:'darkknight',name:'DARK KNIGHT',hp:90,
     skills:{A:'onecut',B:'bloodrush',C:'submission',D:'heal',S:'nothing'},
     passives:['battlerage'],combos:['bladerush','doublestrike'],rollStyle:'normal'},
-  vampire:{id:'vampire',name:'VAMPIRE',hp:75,
-    skills:{A:'slash',B:'sandthrow',C:'counter',D:'wardingflame',S:'nothing'},
+
+  vampire:{id:'vampire',name:'VAMPIRE',hp:45,
+    skills:{A:'slash',B:'bloodrush',C:'counter',D:'wardingflame',S:'nothing'},
     passives:['thorns'],combos:['riposte','zenflow'],rollStyle:'normal'},
 };
 
