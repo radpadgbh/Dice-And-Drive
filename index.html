@@ -219,18 +219,20 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
   </div>
 
   <div class="card">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
       <div>
         <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">player chain</div>
-        <div id="chain-disp" style="min-height:22px;display:flex;flex-wrap:wrap;gap:2px"></div>
+        <div id="chain-disp" style="min-height:22px;display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px"></div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">combos</div>
+        <div id="combo-prog-p" style="font-size:10px;line-height:1.8"></div>
       </div>
       <div>
         <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">enemy chain</div>
-        <div id="echain-disp" style="min-height:22px;display:flex;flex-wrap:wrap;gap:2px"></div>
+        <div id="echain-disp" style="min-height:22px;display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px"></div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">combos</div>
+        <div id="combo-prog-e" style="font-size:10px;line-height:1.8"></div>
       </div>
     </div>
-    <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">combo progress</div>
-    <div id="combo-prog" style="font-size:10px;line-height:2"></div>
   </div>
 
   <div class="card">
@@ -288,9 +290,9 @@ const SKILL_POOL = {
     onWin(sc){return fx({dmgOpp:sc.mySum,statusOpp:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Slash: dmg '+sc.mySum+' +debuff noB'})},
     onParry(sc){return fx({dmgOpp:1,log:'Slash parry: dmg 1'})},
     onLose(sc){return fx({log:'Slash lose: —'})}},
-
-// ขอตัดออกก่อน ดูซ้ำซ้อน
-/*  :{id:'quickslash',name:'Quick Slash',type:'A',
+	
+/* ซ้ำซ้อกับสกิล slash แต่เก็บไว้ปรับปรุง
+  quickslash:{id:'quickslash',name:'Quick Slash',type:'A',
     desc:'onWin: dmg=ผลรวมเต๋า+2\nonParry: dmg 2\nonLose: —',
     onWin(sc){return fx({dmgOpp:sc.mySum+2,log:'Quick Slash: dmg '+(sc.mySum+2)})},
     onParry(sc){return fx({dmgOpp:2,log:'Quick Slash parry: dmg 2'})},
@@ -444,13 +446,6 @@ const SKILL_POOL = {
     onWin(sc){return fx({healSelf:3,log:'"Empty your cup." — heal 3'})},
     onParry(sc){return fx({log:'"Empty your cup." — steady'})},
     onLose(sc){return fx({dmgSelf:5,log:'"Empty your cup." — lose control, dmg 5 self'})}},
-/*
-  scattered:{id:'scattered',name:'"Scattered"',type:'S',
-    desc:'onWin: )',
-    onWin(sc){return fx({statusOpp:{id:'acid',potency:1,count:3},log:'Scattered: acid 1p 3c'})},
-    onParry(sc){return fx({log:'"Empty your cup." — steady'})},
-    onLose(sc){return fx({dmgSelf:5,log:'"Empty your cup." — lose control, dmg 5 self'})}},
-*/
 };
 
 // ── PASSIVE POOL ────────────────────────────────────────
@@ -666,7 +661,7 @@ const ENEMY_POOL = {
     skills:{A:'bodyslam',B:'spitacid',C:'engulf',D:'acidsiphon',S:'nothing'},
     passives:[],combos:[]},
   goblin:{id:'goblin',name:'GOBLIN',hp:60,
-    skills:{A:'slash',B:'dash',C:'counter',D:'heal',S:'nothing'},
+    skills:{A:'quickslash',B:'dash',C:'counter',D:'heal',S:'nothing'},
     passives:['momentum'],combos:['doublestrike']},
   zombie:{id:'zombie',name:'ZOMBIE',hp:80,
     skills:{A:'slash',B:'heavyhit',C:'block',D:'meditate',S:'nothing'},
@@ -858,13 +853,6 @@ function renderEnemyInfo(){
   const en=ENEMY_POOL[G.currentEnemyId];
   document.getElementById('enemy-name-hdr').textContent=en.name;
   document.getElementById('run-progress').textContent='wave '+RUN.wave+' | HP '+G.e.hp;
-  const skillStr=Object.entries(en.skills).map(([t,id])=>{const s=SKILL_POOL[id];return s?t+':'+s.name:''}).filter(Boolean).join('  ');
-  const passStr=en.passives.map(id=>PASSIVE_POOL[id]?.name||'').join(', ')||'—';
-  const comboStr=en.combos.map(id=>COMBO_POOL[id]?.name||'').join(', ')||'—';
-  document.getElementById('einfo-content').innerHTML=
-    `<div><span style="color:var(--faint)">skills: </span>${skillStr}</div>
-     <div><span style="color:var(--faint)">passive: </span>${passStr}</div>
-     <div><span style="color:var(--faint)">combos: </span>${comboStr}</div>`;
   updateFightUI();
   renderCombatLoadout();
 }
@@ -1017,7 +1005,7 @@ function pickType(t){
   if(pLocks.includes(t)){addLog('type '+t+' ถูก lock ใช้ไม่ได้!','l');return}
   G.selectedType=t;renderTypeButtons();
   const sk=SKILL_POOL[G.selectedSkills[t]];
-  document.getElementById('skill-hover').textContent=sk?sk.name+' (selected)':'';
+  document.getElementById('skill-hover').textContent=sk?sk.name+' selected':'';
 }
 
 function spdBonus(entity, passiveIds){
@@ -1211,11 +1199,11 @@ function checkCombos(chain, comboIds, myEnt, oppEnt, side){
 }
 
 function renderChain(){
+  const en=G.currentEnemyId?ENEMY_POOL[G.currentEnemyId]:null;
   document.getElementById('chain-disp').innerHTML=G.chain.slice(-10).map(c=>`<span class="chip ${c.type.toLowerCase()}">${c.type}${c.result}</span>`).join('');
   const echainEl=document.getElementById('echain-disp');
   if(echainEl) echainEl.innerHTML=(G.eChain||[]).slice(-10).map(c=>`<span class="chip ${c.type.toLowerCase()}">${c.type}${c.result}</span>`).join('');
   // combo progress — player + enemy
-  const en=G.currentEnemyId?ENEMY_POOL[G.currentEnemyId]:null;
   function comboRow(chain,comboIds,label){
     if(!comboIds||!comboIds.length) return '';
     const rows=comboIds.map(cid=>{
@@ -1226,9 +1214,10 @@ function renderChain(){
     }).join('');
     return rows?`<div style="margin-bottom:2px"><span style="font-size:9px;color:var(--faint);margin-right:4px">${label}</span>${rows}</div>`:'';
   }
-  document.getElementById('combo-prog').innerHTML=
-    comboRow(G.chain,G.selectedCombos,'P:')+
-    (en?comboRow(G.eChain||[],en.combos,'E:'):'');
+    const ppEl=document.getElementById('combo-prog-p');
+  const peEl=document.getElementById('combo-prog-e');
+  if(ppEl) ppEl.innerHTML=comboRow(G.chain,G.selectedCombos,'');
+  if(peEl) peEl.innerHTML=en?comboRow(G.eChain||[],en.combos,''):'';
 }
 
 // ── UI ───────────────────────────────────────────────────
@@ -1312,9 +1301,10 @@ function loadNextEnemy(next){
   G.selectedSkills=sk;G.selectedCombos=co;G.selectedPassives=pa;
   document.getElementById('blog').innerHTML='';
   document.getElementById('chain-disp').innerHTML='';
-  document.getElementById('combo-prog').innerHTML='';
-  document.getElementById('einfo-body').classList.remove('open');
-  document.getElementById('einfo-label').textContent='▶ enemy loadout';
+//  document.getElementById('combo-prog').innerHTML='';
+  const cpp=document.getElementById('combo-prog-p');if(cpp)cpp.innerHTML='';
+  const cpe=document.getElementById('combo-prog-e');if(cpe)cpe.innerHTML='';
+  const ec=document.getElementById('echain-disp');if(ec)ec.innerHTML='';
   renderEnemyInfo();
   beginTurn();
 }
