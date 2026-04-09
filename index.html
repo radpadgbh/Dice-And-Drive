@@ -287,9 +287,9 @@ const SKILL_POOL = {
   // เน้นดาเมจมีเงื่อนไข ถ้าไม่เข้าเงื่อนไข ดาเมจเบา
 
   clawstrike:{id:'clawstrike',name:'Claw Strike',type:'A',
-    desc:'onWin: hitDice=4 → dmg maxDie×4, else dmg 4\nonParry: hitDice=4 → dmg maxDie×4 + self dmg 4, else dmg 4 + self dmg 4\nonLose: hitDice=4 → dmg 4',
+    desc:'onWin: hitDice=4 → dmg maxDie×4 debuff lock C, else dmg 4\nonParry: hitDice=4 → dmg maxDie×4 + self dmg 4, else dmg 4 + self dmg 4\nonLose: hitDice=4 → dmg 4',
     onWin(sc){
-      if(sc.myHitDice===4) return fx({dmgOpp:sc.myMaxDie*4,log:'Claw Strike win: dmg '+sc.myMaxDie*4});
+      if(sc.myHitDice===4) return fx({dmgOpp:sc.myMaxDie*4,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'C'},log:'Claw Strike win: dmg '+sc.myMaxDie*4+ 'lock C'});
       return fx({dmgOpp:4,log:'Claw Strike win: dmg 4'});},
     onParry(sc){
       if(sc.myHitDice===4) return fx({dmgOpp:sc.myMaxDie*4,dmgSelf:4,log:'Claw Strike parry: dmg '+sc.myMaxDie*4+' self 4'});
@@ -300,7 +300,7 @@ const SKILL_POOL = {
 
   slash:{id:'slash',name:'Slash',type:'A',
     desc:'onWin: dmg=ผลรวมเต๋า + debuff noB\nonParry: dmg 1\nonLose: —',
-    onWin(sc){return fx({dmgOpp:sc.mySum,statusOpps:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Slash: dmg '+sc.mySum+' +debuff noB'})},
+    onWin(sc){return fx({dmgOpp:sc.mySum,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'B'},log:'Slash: dmg '+sc.mySum+' +debuff noB'})},
     onParry(sc){return fx({dmgOpp:1,log:'Slash parry: dmg 1'})},
     onLose(sc){return fx({log:'Slash lose: —'})}},
 
@@ -313,7 +313,7 @@ const SKILL_POOL = {
 */
   jumpkick:{id:'jumpkick',name:'Jump Kick',type:'A',
     desc:'onWin: dmg=speed\nonParry: dmgboth 2\nonLose: —',
-    onWin(sc){return fx({dmgOpp:sc.mySpd,statusOpps:{id:'locktype',potency:0,count:1,lockedType:'B'},log:'Jump Kick: dmg '+(sc.mySpd+' +debuff noB')})},
+    onWin(sc){return fx({dmgOpp:sc.mySpd,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'B'},log:'Jump Kick: dmg '+(sc.mySpd+' +debuff noB')})},
     onParry(sc){return fx({dmgOpp:2,dmgSelf:2,log:'Jump Kick parry: dmgboth 2'})},
     onLose(sc){return fx({log:'Jump Kick: —'})}},
 
@@ -339,7 +339,7 @@ const SKILL_POOL = {
   // เน้น CC debuff interrupt เต๋าต่ำเป็นประโยชน์
   dash:{id:'dash',name:'Dirty Dash',type:'B',
     desc:'onWin: dmg=ผลรวมเต๋า + debuff noC\nonParry: dmg 1\nonLose: —',
-    onWin(sc){return fx({dmgOpp:sc.mySum,statusOpps:{id:'locktype',potency:0,count:1,lockedType:'C'},log:'Dirty Dash: dmg '+sc.mySum+' +debuff noC'})},
+    onWin(sc){return fx({dmgOpp:sc.mySum,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'C'},log:'Dirty Dash: dmg '+sc.mySum+' +debuff noC'})},
     onParry(sc){return fx({dmgOpp:1,log:'Dirty Dash parry: dmg 1'})},
     onLose(sc){return fx({log:'Dirty Dash lose: —'})}},
 
@@ -369,8 +369,8 @@ const SKILL_POOL = {
 
   sandthrow:{id:'sandthrow',name:'Sand Throw',type:'B',
     desc:'onWin: debuff noA + noB รอบหน้า\nonParry: debuff noA\nonLose: —',
-    onWin(sc){return fx({statusOpps:[{id:'locktype',potency:0,count:1,lockedType:'A'},{id:'locktype',potency:0,count:1,lockedType:'B'}],log:'Sand Throw: debuff noA+noB'})},
-    onParry(sc){return fx({statusOpps:{id:'locktype',potency:0,count:1,lockedType:'A'},log:'Sand Throw parry: debuff noA'})},
+    onWin(sc){return fx({statusOpps:[{id:'locktype',potency:1,count:1,lockedType:'A'},{id:'locktype',potency:1,count:1,lockedType:'B'}],log:'Sand Throw: debuff noA+noB'})},
+    onParry(sc){return fx({statusOpps:{id:'locktype',potency:1,count:1,lockedType:'A'},log:'Sand Throw parry: debuff noA'})},
     onLose(sc){return fx({log:'Sand Throw lose: —'})}},
 
   spitacid:{id:'spitacid',name:'Spit Acid',type:'B',
@@ -393,7 +393,7 @@ const SKILL_POOL = {
     onWin(sc){
     return fx({
       statusSelfs:{id:'regen',potency:sc.myMaxDie,count:sc.myHitDice},
-      statusOpps:{id:'locktype',potency:0,count:1,lockedType:'A'},
+      statusOpps:{id:'locktype',potency:1,count:1,lockedType:'A'},
       log:'Dodge win: regen '+sc.myMaxDie+'p '+sc.myHitDice+'c + lock opp A 1T'});},
     onParry(sc){return fx({log:'Dodge parry: —'})},
     onLose(sc){
@@ -569,7 +569,7 @@ const STATUS_POOL = {
           ctx.log('[shield] expired','info');
         }}}},
 
-  haste:{id:'haste',name:'haste',priority:20,statusType:'buff',tags:['speed'],
+  haste:{id:'haste',name:'haste',priority:20,statusType:'buff',tags:['speed','speed_bonus'],
     desc:'speed+potency (อ่านใน calcSpd)\nturnEnd: count-1',
     hooks:{
       turnEnd(entity,s,ctx){ s.count--;
@@ -984,10 +984,15 @@ function renderPDice(){
 
 // calcSpd(entity, passiveIds, diceSum, rollCount) — unified speed formula for both sides
 function calcSpd(entity, passiveIds, diceSum, rollCount){
+  if(entity.statuses.some(s=>s.count>0&&(STATUS_POOL[s.id]?.tags||[]).includes('speed_zero'))) return 0;
   let b=0;
   passiveIds.forEach(pid=>{const pa=PASSIVE_POOL[pid];if(pa&&pa.speedBonus)b+=pa.speedBonus(entity.ps)});
-  entity.statuses.forEach(s=>{if(s.id==='haste')b+=s.potency});
-  return diceSum+rollCount+b;
+  entity.statuses.filter(s=>s.count>0).forEach(s=>{
+    const tags=STATUS_POOL[s.id]?.tags||[];
+    if(tags.includes('speed_bonus')) b+=s.potency;
+    if(tags.includes('speed_down')) b-=s.potency;
+  });
+  return Math.max(0, diceSum+rollCount+b);
 }
 
 function eRollSafe(){
@@ -1251,7 +1256,7 @@ function triggerStatuses(timing){
     if(checkDeath())return;
   }
 }
-function cleanStatuses(){G.p.statuses=G.p.statuses.filter(s=>s.count>0);G.e.statuses=G.e.statuses.filter(s=>s.count>0)}
+function cleanStatuses(){G.p.statuses=G.p.statuses.filter(s=>s.count>0&&s.potency>0);G.e.statuses=G.e.statuses.filter(s=>s.count>0&&s.potency>0)}
 
 function removeStatuses(entity, filter){
   const before = entity.statuses.length;
