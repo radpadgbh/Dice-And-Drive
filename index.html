@@ -462,6 +462,17 @@ engulf:{id:'engulf',name:'Engulf',type:'C',
         log:'Acid Siphon: regen '+p+'p '+c+'c, acid cleared'});},
     onParry(sc){return fx({log:'Acid Siphon parry: —'})},
     onLose(sc){return fx({statusSelfs:{id:'mustwin',potency:1,count:1},log:'Acid Siphon lose: mustwin'})}},
+
+  anklesnare:{id:'anklesnare',name:'Ankle Snare',type:'D',
+    desc:'onWin: dmg=|mySum-oppSum| + lock A 1T + ankle trap 2T\nonParry: —\nonLose: mustwin',
+      onWin(sc){
+      const dmg=Math.abs(sc.mySum-sc.oppSum);
+      return fx({
+      dmgOpp:dmg,
+      statusOpps:[{id:'locktype',potency:1,count:1,lockedType:'A'},{id:'ankletrap',potency:1,count:2}],log:'Ankle Snare: dmg '+dmg+' + lock C 1T + ankletrap 2T'});},
+      onParry(sc){return fx({log:'Ankle Snare parry: —'})},
+      onLose(sc){return fx({statusSelfs:{id:'mustwin',potency:1,count:1},log:'Ankle Snare lose: mustwin'})} },
+
   // ═══ TYPE S — SHOUT / KOAN ═══
   // บทลงโทษจากความโลภ ไม่มีผล หรือ combo setup หรือ บวกมาก=ลบมาก
   nothing:{id:'nothing',name:'"So be it."',type:'S',
@@ -633,6 +644,12 @@ const STATUS_POOL = {
       onClashReveal(entity,s,ctx){ s.count--;
       }}},
 
+  ankletrap:{id:'ankletrap',name:'ankle trap',priority:50,statusType:'permanent_debuff',tags:['trap','speed_zero'],
+    desc:'spd=0 (count turns)\nturnEnd: count-1',
+    hooks:{
+    turnEnd(entity,s,ctx){ s.count--; }
+  }},
+
   // ── เพิ่ม status ใหม่ได้ตรงนี้เลย ──
 };
 
@@ -724,7 +741,7 @@ const ENEMY_POOL = {
     passives:['acidblood'],combos:['acidrush'],rollStyle:'aggro'},
 
   goblin:{id:'goblin',name:'GOBLIN',hp:60,
-    skills:{A:'clawstrike',B:'dash',C:'counter',D:'heal',S:'nothing'},
+    skills:{A:'clawstrike',B:'ambush',C:'dodge',D:'anklesnare',S:'nothing'},
     passives:['momentum'],combos:['doublestrike'],rollStyle:'safe'},
 
   zombie:{id:'zombie',name:'ZOMBIE',hp:120,
