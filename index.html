@@ -286,7 +286,7 @@ const SKILL_POOL = {
   // ═══ TYPE A — AGGRESSIVE ═══
   // เน้นดาเมจมีเงื่อนไข ถ้าไม่เข้าเงื่อนไข ดาเมจเบา
 
-  clawstrike:{id:'clawstrike',name:'Claw Strike',type:'A',
+  clawstrike:{id:'clawstrike',name:'Claw Strike',type:'A',tags:['claw','slash','punch'],
     desc:'onWin: hitDice=4 → dmg maxDie×4 debuff lock C, else dmg 4\nonParry: hitDice=4 → dmg maxDie×4 + self dmg 4, else dmg 4 + self dmg 4\nonLose: hitDice=4 → dmg 4',
     onWin(sc){
       if(sc.myHitDice===4) return fx({dmgOpp:sc.myMaxDie*4,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'C'},log:'Claw Strike win: dmg '+sc.myMaxDie*4+ 'lock C'});
@@ -298,7 +298,7 @@ const SKILL_POOL = {
       if(sc.myHitDice===4) return fx({dmgOpp:4,log:'Claw Strike lose: dmg 4'});
       return fx({log:'Claw Strike lose: —'});}},
 
-  slash:{id:'slash',name:'Slash',type:'A',
+  slash:{id:'slash',name:'Slash',type:'A',tags:['slash'],
     desc:'onWin: dmg=ผลรวมเต๋า + debuff noB\nonParry: dmg 1\nonLose: —',
     onWin(sc){return fx({dmgOpp:sc.mySum,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'B'},log:'Slash: dmg '+sc.mySum+' +debuff noB'})},
     onParry(sc){return fx({dmgOpp:1,log:'Slash parry: dmg 1'})},
@@ -311,13 +311,13 @@ const SKILL_POOL = {
     onParry(sc){return fx({dmgOpp:2,log:'Quick Slash parry: dmg 2'})},
     onLose(sc){return fx({log:'Quick Slash lose: —'})}},
 */
-  jumpkick:{id:'jumpkick',name:'Jump Kick',type:'A',
+  jumpkick:{id:'jumpkick',name:'Jump Kick',type:'A',tags:['Unarmed','legs'],
     desc:'onWin: dmg=speed\nonParry: dmgboth 2\nonLose: —',
     onWin(sc){return fx({dmgOpp:sc.mySpd,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'B'},log:'Jump Kick: dmg '+(sc.mySpd+' +debuff noB')})},
     onParry(sc){return fx({dmgOpp:2,dmgSelf:2,log:'Jump Kick parry: dmgboth 2'})},
     onLose(sc){return fx({log:'Jump Kick: —'})}},
 
-  onecut:{id:'onecut',name:'One Cut',type:'A',
+  onecut:{id:'onecut',name:'One Cut',type:'A',tags:['slash','sword'],
     desc:'onWin: dmg=[1]×10 (ถ้าไม่มีหน้า1=dmg 1)\nonParry: dmg 1 ทั้งคู่\nonLose: dmg 1 ตัวเอง',
     onWin(sc){const o=sc.myDice.filter(d=>d===1).length;const d=o>0?o*10:1;return fx({dmgOpp:d,log:'One Cut: [1]×'+o+'='+d})},
     onParry(sc){return fx({dmgOpp:1,dmgSelf:1,log:'One Cut parry: dmg 1 ทั้งคู่'})},
