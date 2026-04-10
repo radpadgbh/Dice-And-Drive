@@ -492,8 +492,14 @@ engulf:{id:'engulf',name:'Engulf',type:'C',
     onWin(sc){return fx({statusSelfs:{id:'acid',potency:1,count:2},
       statusOpps:{id:'acid',potency:1,count:1},
       log:'"Scattered." — acid spreads both ways'})},
-  onParry(sc){return fx({log:'"Scattered." — nothing'})},
-  onLose(sc){return fx({log:'"Scattered." — nothing'})}},
+    onParry(sc){return fx({log:'"Scattered." — nothing'})},
+    onLose(sc){return fx({log:'"Scattered." — nothing'})}},
+
+  asintended:{id:'asintended',name:'"As intended."',type:'S',
+    desc:'onWin: self dmg=mySum + regen mySum p 0c',
+    onWin(sc){return fx({dmgSelf:sc.mySum,statusSelfs:{id:'regen',potency:sc.mySum,count:0},log:'"As intended." — self dmg '+sc.mySum+' + regen '+sc.mySum+'p 0c'})},
+    onParry(sc){return fx({log:'"As intended." — nothing'})},
+    onLose(sc){return fx({log:'"As intended." — nothing'})}},
 
 
 
