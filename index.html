@@ -287,9 +287,9 @@ const SKILL_POOL = {
   // เน้นดาเมจมีเงื่อนไข ถ้าไม่เข้าเงื่อนไข ดาเมจเบา
 
   clawstrike:{id:'clawstrike',name:'Claw Strike',type:'A',tags:['claw','slash','punch'],
-    desc:'onWin: hitDice=4 → dmg maxDie×4 debuff lock C, else dmg 4\nonParry: hitDice=4 → dmg maxDie×4 + self dmg 4, else dmg 4 + self dmg 4\nonLose: hitDice=4 → dmg 4',
+    desc:'onWin: hitDice=4 → dmg maxDie×8 debuff lock C, else dmg 4\nonParry: hitDice=4 → dmg maxDie×4 + self dmg 4, else dmg 4 + self dmg 4\nonLose: hitDice=4 → dmg 4',
     onWin(sc){
-      if(sc.myHitDice===4) return fx({dmgOpp:sc.myMaxDie*4,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'C'},log:'Claw Strike win: dmg '+sc.myMaxDie*4+ 'lock C'});
+      if(sc.myHitDice===4) return fx({dmgOpp:sc.myMaxDie*8,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'C'},log:'Claw Strike win: dmg '+sc.myMaxDie*8+ 'lock C'});
       return fx({dmgOpp:4,log:'Claw Strike win: dmg 4'});},
     onParry(sc){
       if(sc.myHitDice===4) return fx({dmgOpp:sc.myMaxDie*4,dmgSelf:4,log:'Claw Strike parry: dmg '+sc.myMaxDie*4+' self 4'});
@@ -299,8 +299,11 @@ const SKILL_POOL = {
       return fx({log:'Claw Strike lose: —'});}},
 
   slash:{id:'slash',name:'Slash',type:'A',tags:['slash'],
-    desc:'onWin: dmg=ผลรวมเต๋า + debuff noB\nonParry: dmg 1\nonLose: —',
-    onWin(sc){return fx({dmgOpp:sc.mySum,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'B'},log:'Slash: dmg '+sc.mySum+' +debuff noB'})},
+    desc:'onWin: dmg=ผลรวมเต๋า + debuff noB bleed mixdice p 1c\nonParry: dmg 1\nonLose: —',
+    onWin(sc){
+      const mx=Math.max(...sc.myDice,0);
+      const hits=sc.myDice.length;
+      return fx({dmgOpp:sc.mySum,statusOpps:[{id:'bleed',potency:mx,count:1},{id:'locktype',potency:1,count:1,lockedType:'B'}],log:'Slash: dmg '+sc.mySum+' +debuff noB'})},
     onParry(sc){return fx({dmgOpp:1,log:'Slash parry: dmg 1'})},
     onLose(sc){return fx({log:'Slash lose: —'})}},
 
@@ -312,8 +315,8 @@ const SKILL_POOL = {
     onLose(sc){return fx({log:'Quick Slash lose: —'})}},
 */
   jumpkick:{id:'jumpkick',name:'Jump Kick',type:'A',tags:['Unarmed','legs'],
-    desc:'onWin: dmg=speed\nonParry: dmgboth 2\nonLose: —',
-    onWin(sc){return fx({dmgOpp:sc.mySpd,statusOpps:{id:'locktype',potency:1,count:1,lockedType:'B'},log:'Jump Kick: dmg '+(sc.mySpd+' +debuff noB')})},
+    desc:'onWin: dmg=speed and lock B\nonParry: dmgboth 2\nonLose: —',
+    onWin(sc){return fx({dmgOpp:sc.mySpd,statusOpps:[{id:'locktype',potency:1,count:1,lockedType:'B'}],log:'Jump Kick: dmg '+(sc.mySpd+' +debuff noB')})},
     onParry(sc){return fx({dmgOpp:2,dmgSelf:2,log:'Jump Kick parry: dmgboth 2'})},
     onLose(sc){return fx({log:'Jump Kick: —'})}},
 
@@ -323,11 +326,18 @@ const SKILL_POOL = {
     onParry(sc){return fx({dmgOpp:1,dmgSelf:1,log:'One Cut parry: dmg 1 ทั้งคู่'})},
     onLose(sc){return fx({dmgSelf:1,log:'One Cut lose: dmg 1 ตัวเอง'})}},
 
+/*
   execute:{id:'execute',name:'Execute',type:'A',
     desc:'onWin: dmg=เต๋าสูงสุด×2 ถ้า opp hp<30%: ×4\nonParry: —\nonLose: —',
     onWin(sc){const mx=Math.max(...sc.myDice,0);const isLow=sc.oppSum>0;const d=mx*(isLow?2:2);return fx({dmgOpp:d,log:'Execute: dmg '+d})},
     onParry(sc){return fx({log:'Execute parry: —'})},
     onLose(sc){return fx({log:'Execute lose: —'})}},
+*/
+  heavyhit:{id:'heavyhit',name:'Sucker Punch',type:'A',
+    desc:'onWin: dmg=ผลรวมเต๋า×1.5\nonParry: —\nonLose: dmg 2 ตัวเอง',
+    onWin(sc){const d=Math.floor(sc.mySum*1.5);return fx({dmgOpp:d,log:'Sucker Punch: dmg '+d})},
+    onParry(sc){return fx({log:'Sucker Punch parry: —'})},
+    onLose(sc){return fx({dmgSelf:2,log:'Sucker Punch lose: dmg 2 ตัวเอง'})}},
 
   bodyslam:{id:'bodyslam',name:'Body Slam',type:'A',
     desc:'onWin: ถ้าเร็วกว่าศัตนู sumdice*2 ถ้าไม่ 5 dmg',
@@ -352,12 +362,6 @@ const SKILL_POOL = {
     onParry(sc){return fx({log:'Ambush parry: —'})},
     onLose(sc){return fx({log:'Ambush lose: —'})}},
 
-  heavyhit:{id:'heavyhit',name:'Sucker Punch',type:'B',
-    desc:'onWin: dmg=ผลรวมเต๋า×1.5\nonParry: —\nonLose: dmg 2 ตัวเอง',
-    onWin(sc){const d=Math.floor(sc.mySum*1.5);return fx({dmgOpp:d,log:'Sucker Punch: dmg '+d})},
-    onParry(sc){return fx({log:'Sucker Punch parry: —'})},
-    onLose(sc){return fx({dmgSelf:2,log:'Sucker Punch lose: dmg 2 ตัวเอง'})}},
-
   bloodrush:{id:'bloodrush',name:'Blood Rush',type:'B',
     desc:'onWin: dmg=เต๋าสูงสุด + bleed opp (potency=เต๋าสูงสุด, count=hitdice)\nonParry: bleed opp (potency=1, count=1)\nonLose: —',
     onWin(sc){
@@ -367,11 +371,13 @@ const SKILL_POOL = {
     onParry(sc){return fx({statusOpps:{id:'bleed',potency:1,count:1},log:'Blood Rush parry: bleed 1p 1c'})},
     onLose(sc){return fx({log:'Blood Rush lose: —'})}},
 
+    /*
   sandthrow:{id:'sandthrow',name:'Sand Throw',type:'B',
     desc:'onWin: debuff noA + noB รอบหน้า\nonParry: debuff noA\nonLose: —',
     onWin(sc){return fx({statusOpps:[{id:'locktype',potency:1,count:1,lockedType:'A'},{id:'locktype',potency:1,count:1,lockedType:'B'}],log:'Sand Throw: debuff noA+noB'})},
     onParry(sc){return fx({statusOpps:{id:'locktype',potency:1,count:1,lockedType:'A'},log:'Sand Throw parry: debuff noA'})},
-    onLose(sc){return fx({log:'Sand Throw lose: —'})}},
+   onLose(sc){return fx({log:'Sand Throw lose: —'})}},
+ */
 
   spitacid:{id:'spitacid',name:'Spit Acid',type:'B',
     desc:'onWin: debuff acid p=max number c=hits\nonParry: —\nonLose: —',
@@ -673,18 +679,21 @@ const COMBO_POOL = {
     effect(ctx){ctx.dealOpp(8);ctx.log('combo double strike: dmg 8','combo')}},
 
   riposte:{id:'riposte',name:'riposte',
-    pattern:[{type:'C',result:'W'},{type:'A',result:'W'}],
-    desc:'CW → AW → deal 6 + heal 3',
-    effect(ctx){ctx.dealOpp(6);ctx.healSelf(3);ctx.log('combo riposte: dmg 6 heal 3','combo')}},
+    pattern:[{type:'*',result:'P'},{type:'*',result:'P'}],
+    desc:'*P → *P → deal 12 + heal 3',
+    effect(ctx){ctx.dealOpp(12);ctx.healSelf(3);ctx.log('combo riposte: dmg 12 heal 3','combo')}},
 
   fullcounter:{id:'fullcounter',name:'full counter',
-    pattern:[{type:'C',result:'W'},{type:'C',result:'W'},{type:'C',result:'W'}],
-    desc:'CW×3 → heal 12',
-    effect(ctx){ctx.healSelf(12);ctx.log('combo full counter: heal 12','combo')}},
+    pattern:[{type:'C',result:'W'},{type:'C',result:'W'}],
+    desc:'CW×3 → dmg mySum+oppSum',
+    effect(ctx){
+      const dmg=ctx.G.pDice.reduce((a,b)=>a+b,0)+ctx.G.eDice.reduce((a,b)=>a+b,0);
+      ctx.dealOpp(dmg);
+      ctx.log('combo full counter: dmg '+dmg,'combo');}},
 
   luckystrike:{id:'luckystrike',name:'lucky strike',
-    pattern:[{type:'D',result:'W'},{type:'A',result:'W'}],
-    desc:'DW → AW → deal 10',
+    pattern:[{type:'*',result:'W'},{type:'*',result:'W'},{type:'*',result:'W'}],
+    desc:'AW x 3 → deal 10',
     effect(ctx){ctx.dealOpp(10);ctx.log('combo lucky strike: dmg 10','combo')}},
 
   rally:{id:'rally',name:'rally',
@@ -702,13 +711,17 @@ const COMBO_POOL = {
     effect(ctx){ctx.dealOpp(15);ctx.log('combo blade rush: dmg 15','combo')}},
 
   ironwall:{id:'ironwall',name:'iron wall',
-    pattern:[{type:'C',result:'W'},{type:'C',result:'W'}],
-    desc:'CW×2 → heal 6',
-    effect(ctx){ctx.healSelf(6);ctx.log('combo iron wall: heal 6','combo')}},
+    pattern:[{type:'C',result:'W'},{type:'C',result:'*'}],
+    desc:'CW → C* → shield mySum p 1c',
+    effect(ctx){
+      const sum=ctx.G.pDice.reduce((a,b)=>a+b,0);
+      const target=ctx.side==='player'?ctx.G.p:ctx.G.e;
+      applyStatus(target,{id:'shield',potency:sum,count:1});
+    ctx.log('combo iron wall: shield '+sum+'p 1c','combo');}},
 
   desperation:{id:'desperation',name:'desperation',
-    pattern:[{type:'D',result:'L'},{type:'D',result:'L'},{type:'A',result:'W'}],
-    desc:'DL×2 → AW → deal 12',
+    pattern:[{type:'*',result:'L'},{type:'*',result:'L'},{type:'*',result:'W'}],
+    desc:'*L → *L → *W → deal 12',
     effect(ctx){ctx.dealOpp(12);ctx.log('combo desperation: dmg 12','combo')}},
 
   bursttide:{id:'bursttide',name:'burst tide',
@@ -717,8 +730,8 @@ const COMBO_POOL = {
     effect(ctx){ctx.dealOpp(10);ctx.log('combo burst tide: dmg 10','combo')}},
 
   zenflow:{id:'zenflow',name:'zen flow',
-    pattern:[{type:'D',result:'W'},{type:'C',result:'W'},{type:'D',result:'W'}],
-    desc:'DW → CW → DW → heal 15',
+    pattern:[{type:'D',result:'W'},{type:'*',result:'W'},{type:'*',result:'W'}],
+    desc:'DW → *W → *W → heal 15',
     effect(ctx){ctx.healSelf(15);ctx.log('combo zen flow: heal 15','combo')}},
 
   acidrush:{id:'acidrush',name:'Acid Rush',
